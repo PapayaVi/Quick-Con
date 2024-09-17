@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet"/>
+    <link href="/css/dark.css" rel="stylesheet"/>
+  
+</head>
+<body>
+    <div class="navbar">
+        <div class="navbar-title">DarkChat</div>
+        <div class="navbar-user">
+            <span class="navbar-user-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-person-circle" viewBox="0 0 16 16">
+                    <path d="M11 6a3 3 0 1 1-6 0 3 3 0 0 1 6 0z"/>
+                    <path fill-rule="evenodd" d="M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8zm8-7a7 7 0 0 0-5.468 11.37C3.242 11.226 4.805 10 8 10s4.757 1.225 5.468 2.37A7 7 0 0 0 8 1z"/>
+                </svg>
+            </span>
+            <span class="navbar-user-name">User</span>
+        </div>
+    </div>
+        <div class="wrapper">
+                <div class="chat-container">
+                        <div class="chat-area">
+                                
+                        </div>
+                        <form id="chat" class="chat-form">
+                                <div class="input-area">
+                                        <input type="text" class="input-box" id="chatbox" placeholder="Type your message...">
+                                        <!-- <button class="send-button" type="submit">Send</button> -->
+                                </div>
+                        </form>
+                        
+                        
+                </div>
+                <div class="sidebar">
+                        <div class="sidebar-header">Participants</div>
+                        <ul class="sidebar-list">
+                                <li class="sidebar-list-item">
+                                <div class="sidebar-item">
+                                        <span class="sidebar-icon">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-person-circle" viewBox="0 0 16 16">
+                                                <path d="M11 6a3 3 0 1 1-6 0 3 3 0 0 1 6 0z"/>
+                                                <path fill-rule="evenodd" d="M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8zm8-7a7 7 0 0 0-5.468 11.37C3.242 11.226 4.805 10 8 10s4.757 1.225 5.468 2.37A7 7 0 0 0 8 1z"/>
+                                        </svg>
+                                        </span>
+                                        <span class="sidebar-label">Alice</span>
+                                </div>
+                                </li>
+                                <li class="sidebar-list-item">
+                                <div class="sidebar-item">
+                                        <span class="sidebar-icon">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-person-circle" viewBox="0 0 16 16">
+                                                <path d="M11 6a3 3 0 1 1-6 0 3 3 0 0 1 6 0z"/>
+                                                <path fill-rule="evenodd" d="M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8zm8-7a7 7 0 0 0-5.468 11.37C3.242 11.226 4.805 10 8 10s4.757 1.225 5.468 2.37A7 7 0 0 0 8 1z"/>
+                                        </svg>
+                                        </span>
+                                        <span class="sidebar-label">Bob</span>
+                                </div>
+                                </li>
+                                <li class="sidebar-list-item">
+                                <div class="sidebar-item">
+                                        <span class="sidebar-icon">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-person-circle" viewBox="0 0 16 16">
+                                                <path d="M11 6a3 3 0 1 1-6 0 3 3 0 0 1 6 0z"/>
+                                                <path fill-rule="evenodd" d="M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8zm8-7a7 7 0 0 0-5.468 11.37C3.242 11.226 4.805 10 8 10s4.757 1.225 5.468 2.37A7 7 0 0 0 8 1z"/>
+                                        </svg>
+                                        </span>
+                                        <span class="sidebar-label">You</span>
+                                </div>
+                                </li>
+                        </ul>
+                        <div class="sidebar-header">Settings</div>
+                        <ul class="sidebar-list">
+                                <li class="sidebar-list-item">
+                                </li>
+                                <li class="sidebar-list-item">
+                                <div class="sidebar-item">
+                                        <span class="sidebar-icon">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-bell-fill" viewBox="0 0 16 16">
+                                                <path d="M8 16a2 2 0 0 0 2-2H6a2 2 0 0 0 2 2zm.995-14.901a1 1 0 1 0-1.99 0A5.002 5.002 0 0 0 3 6c0 1.098-.5 2.083-.824 2.995l.444.444a1 1 0 0 0 1.415-1.414l-.501-.501A.5.5 0 0 0 7 6c.831 0 1.562-.552 1.99-.885l.444.444a1 1 0 0 0 1.414-1.415l-.501-.501a2.002 2.002 0 0 0-.824-2.994 5.002 5.002 0 0 0-3-3zm.004 13.901a1 1 0 0 0-1.99 0A5.002 5.002 0 0 0 3 6c0 1.098-.5 2.083-.824 2.995l.444.444a1 1 0 0 0 1.415-1.414l-.501-.501A.5.5 0 0 0 7 6c.831 0 1.562-.552 1.99-.885l.444.444a1 1 0 0 0 1.414-1.415l-.501-.501a2.002 2.002 0 0 0-.824-2.994 5.002 5.002 0 0 0-3-3zm.004 13.901a1 1 0 0 0-1.99 0A5.002 5.002 0 0 0 3 6c0 1.098-.5 2.083-.824 2.995l.444.444a1 1 0 0 0 1.415-1.414l-.501-.501A.5.5 0 0 0 7 6c.831 0 1.562-.552 1.99-.885l.444.444a1 1 0 0 0 1.414-1.415l-.501-.501a2.002 2.002 0 0 0-.824-2.994 5.002 5.002 0 0 0-3-3z"/>
+                                        </svg>
+                                        </span>
+                                        <span class="sidebar-label">Notifications</span>
+                                        <span class="sidebar-icon">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-circle-fill" viewBox="0 0 16 16">
+                                        </svg>
+                                        </span>
+                                </div>
+                                </li>
+                        </ul>
+                </div>
+        </div>
+    <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://code.jquery.com/jquery-3.7.1.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        $(document).ready(function (e) {
+ 
+                var socket = io();
+
+                // send message to server when form is submitted
+                $('#chat').submit(function (e) {
+                        e.preventDefault();
+                        var message = $('#chatbox').val();
+                        socket.emit('chat message', message);
+                        $('#chatbox').val(''); // clear input field
+                });
+                let isScrolling = false;
+
+                // receive message from server and append to #messages list
+                socket.on('chat message', (res) => {
+                        const msg_feed = `
+                        <div class="message">
+                        <span class="message-text">${res.message}</span>
+                        <span class="message-time">Anonymous - ${res.time}</span>
+                        </div>`;
+                        console.log("adding...")
+                        const chatArea = $('.chat-area');
+                        chatArea.append(msg_feed); // Append the new message instead of prepending it
+                        // Check if the user is not actively scrolling
+                        if (!isScrolling) {
+                                chatArea.scrollTop(chatArea[0].scrollHeight);  
+                                //  // Scroll to the bottom  
+                        }else{
+                                chatArea.animate({ scrollTop: chatArea[0].scrollHeight }, 500);
+                        }
+                });
+                // Add an event listener to detect when the user starts scrolling
+                $('.chat-area').on('scroll', () => {
+                        isScrolling = true;
+                });
+
+                // Add an event listener to detect when the user stops scrolling
+                $('.chat-area').on('scrollstop', () => {
+                        isScrolling = false;
+                });
+        });
+    </script>
+</body>
+</html>

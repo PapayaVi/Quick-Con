@@ -1,0 +1,198 @@
+::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+  
+  ::-webkit-scrollbar-thumb {
+    background-color: #8B9467; /* Omori's signature green color */
+    border-radius: 10px;
+    box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.3);
+  }
+  
+  ::-webkit-scrollbar-thumb:hover {
+    background-color: #6B7F4B; /* A slightly darker shade of green */
+  }
+  
+  ::-webkit-scrollbar-track {
+    background-color: #F7F7F7; /* A light gray color to match Omori's UI */
+    border-radius: 10px;
+    box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.1);
+  }
+body {
+    background-color: #212529;
+    color: white;
+}
+
+.wrapper {
+    display: flex;
+    flex-direction: row;
+    height: calc(100vh - 60px);
+    /* subtract the height of the navbar */
+}
+
+.chat-container {
+    flex: 1;
+    padding: 20px;
+    overflow-y: auto;
+}
+
+.chat-area {
+    width: 100%;
+    padding: 20px;
+    max-height: 80vh;
+    /* Add this line */
+    overflow-y: auto;
+    height: 100%;
+}
+
+.chat-container::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+}
+
+.chat-container::-webkit-scrollbar-thumb {
+    background: #444242;
+    /* gray color */
+    border-radius: 10px;
+}
+
+.chat-container::-webkit-scrollbar-track {
+    background: #444242;
+    /* light gray color */
+}
+
+.message {
+    background-color: #343a40;
+    padding: 10px;
+    margin-bottom: 10px;
+    border-radius: 5px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.message-time {
+    font-size: 12px;
+    color: #868e96;
+    margin-left: auto;
+}
+
+.message-text {
+    margin-right: auto;
+}
+
+.input-area {
+    display: flex;
+    align-items: center;
+}
+
+.input-box {
+    flex-grow: 1;
+    margin-right: 10px;
+    border: none;
+    background-color: #ffffff;
+    color: #000000;
+    padding: 10px;
+    border-radius: 5px;
+}
+
+.send-button {
+    background-color: red;
+    color: white;
+    padding: 10px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.sidebar {
+    width: 30%;
+    padding: 20px;
+}
+
+.sidebar-header {
+    font-size: 20px;
+    font-weight: bold;
+    margin-bottom: 20px;
+}
+
+.sidebar-list {
+    list-style: none;
+    padding: 0;
+}
+
+.sidebar-list-item {
+    margin-bottom: 10px;
+}
+
+.sidebar-item {
+    display: flex;
+    align-items: center;
+}
+
+.sidebar-icon {
+    margin-right: 10px;
+}
+
+.sidebar-label {
+    color: #868e96;
+    margin-right: 1em;
+}
+
+.navbar {
+    background-color: #343a40;
+    padding: 10px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.navbar-title {
+    color: white;
+    font-size: 20px;
+    font-weight: bold;
+}
+
+.navbar-user {
+    display: flex;
+    align-items: center;
+}
+
+.navbar-user-icon {
+    margin-right: 10px;
+}
+
+.navbar-user-name {
+    color: white;
+}
+
+form {
+    position: sticky;
+    /* Add this line */
+    bottom: 0;
+    /* Add this line */
+    transition: opacity 0.5s;
+    /* Add this line */
+    opacity: 0.5;
+    /* Add this line */
+}
+
+form:hover {
+    opacity: 1;
+    /* Add this line */
+}
+
+.chat-form {
+    background-color: rgba(128, 128, 128, 0.2);
+    border-radius: 5px;
+}
+
+.form-check-input[type="checkbox"] {
+    background-color: #ccc; /* Gray background color */
+    border-color: #ccc; /* Gray border color */
+}
+
+.form-check-input[type="checkbox"]:checked {
+    background-color: #666; /* Darker gray background color when checked */
+    border-color: #666; /* Darker gray border color when checked */
+}
