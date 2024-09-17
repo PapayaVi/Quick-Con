@@ -44,7 +44,7 @@ body {
     display: flex;
     flex-direction: row;
     height: calc(100vh - 60px);
-    /* subtract the height of the navbar */
+   
 }
 .wrapper::before {
     content: '';
@@ -61,7 +61,7 @@ body {
     animation: fadeIn 0.5s ease-in-out; /* add animation effect */
 }
 .wrapper.fade-out::before {
-    animation: fadeOut 0.5s ease-in-out; /* add animation effect */
+    animation: fadeOut 0.8s ease-in-out; /* add animation effect */
 }
 
 .chat-container {
