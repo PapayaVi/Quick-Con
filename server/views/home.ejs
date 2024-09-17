@@ -11,7 +11,7 @@
 </head>
 <body>
     <div class="navbar">
-        <div class="navbar-title">DarkChat</div>
+        <div class="navbar-title">quickCon</div>
         <div class="navbar-user">
             <span class="navbar-user-icon">
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-person-circle" viewBox="0 0 16 16">
@@ -76,20 +76,18 @@
                         <div class="sidebar-header">Settings</div>
                         <ul class="sidebar-list">
                                 <li class="sidebar-list-item">
-                                </li>
-                                <li class="sidebar-list-item">
-                                <div class="sidebar-item">
-                                        <span class="sidebar-icon">
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-bell-fill" viewBox="0 0 16 16">
-                                                <path d="M8 16a2 2 0 0 0 2-2H6a2 2 0 0 0 2 2zm.995-14.901a1 1 0 1 0-1.99 0A5.002 5.002 0 0 0 3 6c0 1.098-.5 2.083-.824 2.995l.444.444a1 1 0 0 0 1.415-1.414l-.501-.501A.5.5 0 0 0 7 6c.831 0 1.562-.552 1.99-.885l.444.444a1 1 0 0 0 1.414-1.415l-.501-.501a2.002 2.002 0 0 0-.824-2.994 5.002 5.002 0 0 0-3-3zm.004 13.901a1 1 0 0 0-1.99 0A5.002 5.002 0 0 0 3 6c0 1.098-.5 2.083-.824 2.995l.444.444a1 1 0 0 0 1.415-1.414l-.501-.501A.5.5 0 0 0 7 6c.831 0 1.562-.552 1.99-.885l.444.444a1 1 0 0 0 1.414-1.415l-.501-.501a2.002 2.002 0 0 0-.824-2.994 5.002 5.002 0 0 0-3-3zm.004 13.901a1 1 0 0 0-1.99 0A5.002 5.002 0 0 0 3 6c0 1.098-.5 2.083-.824 2.995l.444.444a1 1 0 0 0 1.415-1.414l-.501-.501A.5.5 0 0 0 7 6c.831 0 1.562-.552 1.99-.885l.444.444a1 1 0 0 0 1.414-1.415l-.501-.501a2.002 2.002 0 0 0-.824-2.994 5.002 5.002 0 0 0-3-3z"/>
-                                        </svg>
-                                        </span>
-                                        <span class="sidebar-label">Notifications</span>
-                                        <span class="sidebar-icon">
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-circle-fill" viewBox="0 0 16 16">
-                                        </svg>
-                                        </span>
-                                </div>
+                                        <div class="sidebar-item">
+                                                <button type="button" class="btn btn-outline-secondary" id="changebg">
+                                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-toggles2" viewBox="0 0 16 16">
+                                                        <path d="M9.465 10H12a2 2 0 1 1 0 4H9.465c.34-.588.535-1.271.535-2s-.195-1.412-.535-2"></path>
+                                                        <path d="M6 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6m0 1a4 4 0 1 1 0-8 4 4 0 0 1 0 8m.535-10a4 4 0 0 1-.409-1H4a1 1 0 0 1 0-2h2.126q.138-.534.41-1H4a2 2 0 1 0 0 4z"></path>
+                                                        <path d="M14 4a4 4 0 1 1-8 0 4 4 0 0 1 8 0"></path>
+                                                        </svg>
+                                                </button>
+                                                <span class="sidebar-label">BG</span>
+
+                                        </div>
+
                                 </li>
                         </ul>
                 </div>
@@ -99,9 +97,10 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="https://code.jquery.com/jquery-3.7.1.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="/js/bgchanger.js"></script>
     <script>
         $(document).ready(function (e) {
- 
+                
                 var socket = io();
 
                 // send message to server when form is submitted
@@ -120,7 +119,6 @@
                         <span class="message-text">${res.message}</span>
                         <span class="message-time">Anonymous - ${res.time}</span>
                         </div>`;
-                        console.log("adding...")
                         const chatArea = $('.chat-area');
                         chatArea.append(msg_feed); // Append the new message instead of prepending it
                         // Check if the user is not actively scrolling
@@ -131,6 +129,24 @@
                                 chatArea.animate({ scrollTop: chatArea[0].scrollHeight }, 500);
                         }
                 });
+                socket.on('dc', (res) => {
+                        const msg_feed = `
+                        <div class="message">
+                                <span class="message-text" style="color: #C5C5C5">${res.message}</span>
+                                <span class="message-time">Anonymous - ${res.time}</span>
+                        </div>`;
+                        
+                        const chatArea = $('.chat-area');
+                        chatArea.append(msg_feed); 
+                       
+                        if (!isScrolling) {
+                                chatArea.scrollTop(chatArea[0].scrollHeight);  
+                              
+                        }else{
+                                chatArea.animate({ scrollTop: chatArea[0].scrollHeight }, 500);
+                        }
+                        
+                })
                 // Add an event listener to detect when the user starts scrolling
                 $('.chat-area').on('scroll', () => {
                         isScrolling = true;
@@ -140,6 +156,8 @@
                 $('.chat-area').on('scrollstop', () => {
                         isScrolling = false;
                 });
+
+                $('.wrapper').css('--bg-image', `url(${images[0]})`);
         });
     </script>
 </body>

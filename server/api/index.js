@@ -51,14 +51,24 @@ io.on('connection', (socket) => {
         // Load previous messages from the database
         db.execute("SELECT message,DATE_FORMAT(CONVERT_TZ(created_at, '+00:00', '+08:00'), '%h:%i %p') AS time FROM chat_messages ORDER BY created_at ASC").then(([results, fields]) => {
                 results.forEach((res_obj) => {
-                        io.emit('chat message', {message : res_obj.message, time : res_obj.time} );
+                        socket.emit('chat message', {message : res_obj.message, time : res_obj.time} );
                 });
         }).catch((err) => {
                 console.error('Error loading previous messages:', err);
         });
 
         socket.on('disconnect', () => {
-                io.emit('chat message', 'user has left...');;
+                function getCurrentTime() {
+                        const date = new Date();
+                        const hours = date.getHours();
+                        const minutes = date.getMinutes();
+                        const ampm = hours >= 12 ? 'PM' : 'AM';
+                        const hours12 = hours % 12;
+                        const hours12String = hours12 === 0 ? '12' : hours12.toString();
+                        const minutesString = minutes.toString().padStart(2, '0');
+                        return `${hours12String}:${minutesString} ${ampm}`;
+                      }
+                io.emit('dc', {message: 'user has left...', time: getCurrentTime()});;
         });
 
         socket.on('chat message', (msg) => {
