@@ -11,7 +11,7 @@ const server = http.createServer(app);
 const { Server } = require("socket.io");
 const io = new Server(server);
 
-const dbConfig = require('../db.config');
+const dbConfig = require('./db.config');
 const mysql = require('mysql2/promise');
 
 const db = mysql.createPool({
@@ -39,7 +39,7 @@ app.use(bodyParser.json());
 app.use(express.static('public'));
 
 app.set("view engine", "ejs",);
-app.set("views", path.join(__dirname,'/../views'));
+app.set("views", path.join(__dirname,'./views'));
 
 const port = process.env.PORT;
 
@@ -51,7 +51,6 @@ io.on('connection', (socket) => {
         // Load previous messages from the database
         db.execute("SELECT message,DATE_FORMAT(CONVERT_TZ(created_at, '+00:00', '+08:00'), '%h:%i %p') AS time FROM chat_messages ORDER BY created_at ASC").then(([results, fields]) => {
                 results.forEach((res_obj) => {
-                        console.log("loading msg : "+res_obj.message)
                         socket.emit('chat message', {message : res_obj.message, time : res_obj.time} );
                 });
         }).catch((err) => {
