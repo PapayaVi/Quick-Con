@@ -51,6 +51,7 @@ io.on('connection', (socket) => {
         // Load previous messages from the database
         db.execute("SELECT message,DATE_FORMAT(CONVERT_TZ(created_at, '+00:00', '+08:00'), '%h:%i %p') AS time FROM chat_messages ORDER BY created_at ASC").then(([results, fields]) => {
                 results.forEach((res_obj) => {
+                        console.log("loading msg : "+res_obj.message)
                         socket.emit('chat message', {message : res_obj.message, time : res_obj.time} );
                 });
         }).catch((err) => {
@@ -73,18 +74,20 @@ io.on('connection', (socket) => {
 
         socket.on('chat message', (msg) => {
                 // Save the message to the database
+                console.log("received : "+ msg)
                 db.execute('INSERT INTO chat_messages (message) VALUES (:message)', { message: msg })
                 .then((result) => {
                 const insertedId = result[0].insertId;
                
-                db.execute("SELECT message,DATE_FORMAT(CONVERT_TZ(created_at, '+00:00', '+08:00'), '%h:%i %p') AS time FROM chat_messages WHERE id = ?", [insertedId])
-                .then((rows) => {
-                        const insertedData = rows[0];
-                        io.emit('chat message', insertedData[0]);
-                })
-                .catch((err) => {
-                        console.error('Error fetching inserted data:', err);
-                });
+                        db.execute("SELECT message,DATE_FORMAT(CONVERT_TZ(created_at, '+00:00', '+08:00'), '%h:%i %p') AS time FROM chat_messages WHERE id = ?", [insertedId])
+                        .then((rows) => {
+                                const insertedData = rows[0];
+                                console.log("received result : "+insertedData)
+                                io.emit('chat message', insertedData[0]);
+                        })
+                        .catch((err) => {
+                                console.error('Error fetching inserted data:', err);
+                        });
                 })
                 .catch((err) => {
                 console.error('Error saving message:', err);
