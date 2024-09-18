@@ -74,7 +74,6 @@ io.on('connection', (socket) => {
 
         socket.on('chat message', (msg) => {
                 // Save the message to the database
-                console.log("received : "+ msg)
                 db.execute('INSERT INTO chat_messages (message) VALUES (:message)', { message: msg })
                 .then((result) => {
                 const insertedId = result[0].insertId;
@@ -82,7 +81,6 @@ io.on('connection', (socket) => {
                         db.execute("SELECT message,DATE_FORMAT(CONVERT_TZ(created_at, '+00:00', '+08:00'), '%h:%i %p') AS time FROM chat_messages WHERE id = ?", [insertedId])
                         .then((rows) => {
                                 const insertedData = rows[0];
-                                console.log("received result : "+insertedData)
                                 io.emit('chat message', insertedData[0]);
                         })
                         .catch((err) => {
@@ -93,6 +91,12 @@ io.on('connection', (socket) => {
                 console.error('Error saving message:', err);
                 });
         });
+
+        socket.on("connect_error", (err) => {
+                console.log(err.message); // the reason of the error, for example "xhr poll error"
+                console.log(err.description); // some additional description, for example the status code of the initial HTTP response
+                console.log(err.context); // some additional context, for example the XMLHttpRequest object
+              });
 });
 
 server.listen(3000, () => {
