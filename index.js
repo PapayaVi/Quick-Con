@@ -1,6 +1,6 @@
 const express = require('express');
 const app = express()
-
+const coreJs = require('core-js/stable/object/from-entries');
 require('dotenv').config()
 
 const path = require("path");
@@ -10,6 +10,7 @@ const http = require('http');
 const server = http.createServer(app);
 const { Server } = require("socket.io");
 const io = new Server(server);
+const adapter = io.adapter;
 
 const dbConfig = require('./db.config');
 const mysql = require('mysql2/promise');
@@ -17,7 +18,57 @@ const mysql = require('mysql2/promise');
 const db = mysql.createPool({
         ...dbConfig,
         namedPlaceholders: true,
-      });
+});
+
+const { fakerJA }= require('@faker-js/faker');
+const honorifics = ['-san', '-chan', '-kun', '-sensei'];
+const cuteWords = [
+        'Mochi',
+        'Luna',
+        'Panda',
+        'Mochi',
+        'Sunny',
+        'Honey',
+        'Muffin',
+        'Pixie',
+        'Lemon',
+        'Daisy',
+        'Sweetie',
+        'Lily',
+        'Snooky',
+        'Fuzzy',
+        'Mochiko',
+        'Bibi',
+        'Mimi',
+        'Lolo',
+        'Nana',
+        'Floppy',
+        'Fluffy',
+        'Puffy',
+        'Sweetpea',
+        'Lovey',
+        'Cutie',
+        'Munchie',
+        'Snugglebug',
+        'Cuddlebug',
+        'Lovebug'
+
+];
+function generateNickname(a) {
+        const randomCuteWord = cuteWords[Math.floor(Math.random() * cuteWords.length)];
+        const randomHonorific = honorifics[Math.floor(Math.random() * honorifics.length)];
+        return `${randomCuteWord}${randomHonorific}`;
+}
+function getCurrentTime() {
+        const date = new Date();
+        const hours = date.getHours();
+        const minutes = date.getMinutes();
+        const ampm = hours >= 12 ? 'PM' : 'AM';
+        const hours12 = hours % 12;
+        const hours12String = hours12 === 0 ? '12' : hours12.toString();
+        const minutesString = minutes.toString().padStart(2, '0');
+        return `${hours12String}:${minutesString} ${ampm}`;
+}
 
 // Create a table to store chat messages if it doesn't exist
 db.execute(`
@@ -43,41 +94,64 @@ app.set("views", path.join(__dirname,'./views'));
 
 const port = process.env.PORT;
 
-app.get('/', (req, res) => {  
+app.get('/', (req, res) => { 
         res.render("home");
 });
 
 io.on('connection', (socket) => {
+        socket.setMaxListeners(30);
+    
         // Load previous messages from the database
-        db.execute("SELECT message,DATE_FORMAT(CONVERT_TZ(created_at, '+00:00', '+08:00'), '%h:%i %p') AS time FROM chat_messages ORDER BY created_at ASC").then(([results, fields]) => {
+        db.execute("SELECT message,DATE_FORMAT(CONVERT_TZ(created_at, '+00:00', '+08:00'), '%h:%i %p') AS time, temp_user AS user,type FROM chat_messages WHERE type='sent' ORDER BY created_at ASC").then(([results, fields]) => {
                 results.forEach((res_obj) => {
-                        socket.emit('chat message', {message : res_obj.message, time : res_obj.time} );
+                        socket.emit('chat message', {message : res_obj.message, time : res_obj.time, user : res_obj.user, type : res_obj.type});
                 });
+                
         }).catch((err) => {
                 console.error('Error loading previous messages:', err);
         });
 
-        socket.on('disconnect', () => {
-                function getCurrentTime() {
-                        const date = new Date();
-                        const hours = date.getHours();
-                        const minutes = date.getMinutes();
-                        const ampm = hours >= 12 ? 'PM' : 'AM';
-                        const hours12 = hours % 12;
-                        const hours12String = hours12 === 0 ? '12' : hours12.toString();
-                        const minutesString = minutes.toString().padStart(2, '0');
-                        return `${hours12String}:${minutesString} ${ampm}`;
-                      }
-                io.emit('dc', {message: 'user has left...', time: getCurrentTime()});;
+        socket.username = generateNickname(adapter.participants);
+        socket.emit('user_connect', socket.username)
+        adapter.participants = adapter.participants || [];
+        adapter.participants.push(socket.username);
+
+        
+        
+
+        socket.on('add_participant', () => {
+                console.log("connected"+adapter.participants.length)
+                io.emit('participant_connect', adapter.participants)
         });
 
+        socket.on('disconnect', () => {
+                let index = adapter.participants.indexOf(socket.username);
+                if (index !== -1) {
+                        adapter.participants.splice(index, 1);
+                }
+                const msg = `${socket.username} has left...`;
+                io.emit('user_disconnect', {message: msg, time: getCurrentTime(), user: socket.username });
+                console.log("disconnected"+adapter.participants.length)
+                if(adapter.participants.length === 0){ // might need to change this
+                        db.execute('truncate table chat_messages').then((result) => {
+                                console.log("room cleared...")
+                        })
+                        .catch((err) => {
+                                console.error('Error saving message:', err);
+                        });
+                }
+        });
+        
+                
         socket.on('chat message', (msg) => {
-                // Save the message to the database
-                db.execute('INSERT INTO chat_messages (message) VALUES (:message)', { message: msg })
-                .then((result) => {
-                const insertedId = result[0].insertId;
-               
-                        db.execute("SELECT message,DATE_FORMAT(CONVERT_TZ(created_at, '+00:00', '+08:00'), '%h:%i %p') AS time FROM chat_messages WHERE id = ?", [insertedId])
+                db.execute('INSERT INTO chat_messages (temp_user, message, type) VALUES (:temp_user, :message, :type)', { 
+                        temp_user: socket.username, 
+                        message: msg,
+                        type: 'sent' 
+                }).then((result) => {
+                        const insertedId = result[0].insertId;
+                
+                        db.execute("SELECT message,DATE_FORMAT(CONVERT_TZ(created_at, '+00:00', '+08:00'), '%h:%i %p') AS time,temp_user AS user,type FROM chat_messages WHERE id = ?", [insertedId])
                         .then((rows) => {
                                 const insertedData = rows[0];
                                 io.emit('chat message', insertedData[0]);
@@ -87,8 +161,25 @@ io.on('connection', (socket) => {
                         });
                 })
                 .catch((err) => {
-                console.error('Error saving message:', err);
+                        console.error('Error saving message:', err);
                 });
+        });
+
+        
+
+        //----------------- Fun
+        io.on('playSound', (audio) => {
+                io.emit('playSound', audio);
+        });
+        io.on('stopSound', () => {
+                io.emit('stopSound');
+        });
+
+        socket.on('soundboardStart', (audioSrc) => {
+                io.emit('playSound', audioSrc);
+        });
+        socket.on('soundboardStop', () => {
+                io.emit('stopSound');
         });
 
         socket.on("connect_error", (err) => {
