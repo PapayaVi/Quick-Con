@@ -39,9 +39,13 @@
                 <div class="sidebar">
                         <div class="sidebar-header">Participants</div>
                         <ul class="sidebar-list" id="participantarea">
+                                <input type="text" id="participant-search" placeholder="Search participants...">
+                                <ul id="participant-list" class="sidebar-list">
+                                <!-- participant list items will be generated dynamically -->
+                                </ul>
                         </ul>
 
-                        <div class="sidebar-header">Player</div>
+                        <div class="sidebar-header">AudioPlayer</div>
                         <ul class="sidebar-list">
                                 <li class="sidebar-list-item">
                                         <div class="sidebar-item">
@@ -66,7 +70,7 @@
 
                                 </li>
                         </ul>
-                        <div class="sidebar-header">Settings</div>
+                        <div class="sidebar-header">Background</div>
                         <ul class="sidebar-list">
                                 <li class="sidebar-list-item">
                                         <div class="sidebar-item">
@@ -77,7 +81,7 @@
                                                         <path d="M14 4a4 4 0 1 1-8 0 4 4 0 0 1 8 0"></path>
                                                         </svg>
                                                 </button>
-                                                <span class="sidebar-label">BG</span>
+                                                <span class="sidebar-label">Next</span>
 
                                         </div>
 
@@ -143,10 +147,11 @@
                         const msg_time = `${res.user} - ${getCurrentTime()}`
                         
                         const msg_feed = `
+                        <div class="${res.user === $('#username').text() ? 'message-right' : 'message-left'}">
                         <span class="message-time">${msg_time}</span>
                         <div class="message">
                                 <span class="message-text">${res.message}</span>
-                                
+                        </div>
                         </div>`;
                         
                         chatArea.append(msg_feed); 
@@ -179,25 +184,56 @@
                 });
                 
                 socket.on('participant_connect', (res) => {
-                        participantArea.empty();
-                        $.each(res, (index, participant) => {
-                                const username = participant.replace(/-/g, "");
-                                const userElement = `
-                                <li class="sidebar-list-item" id="${username}">
-                                        <div class="sidebar-item">
-                                                <span class="sidebar-icon">
-                                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-person-circle" viewBox="0 0 16 16">
-                                                                <path d="M11 6a3 3 0 1 1-6 0 3 3 0 0 1 6 0z"/>
-                                                                <path fill-rule="evenodd" d="M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8zm8-7a7 7 0 0 0-5.468 11.37C3.242 11.226 4.805 10 8 10s4.757 1.225 5.468 2.37A7 7 0 0 0 8 1z"/>
-                                                        </svg>
-                                                </span>
-                                                <span class="sidebar-label">${participant}</span>
-                                        </div>
-                                </li>
-                                `;
-                                participantArea.append(userElement);
-                        });
-                })
+    const participantArea = $('#participantarea');
+    participantArea.empty();
+
+    // add search bar
+    const searchInput = `
+        <input type="text" id="participant-search" placeholder="Search participants...">
+    `;
+    participantArea.append(searchInput);
+
+    // generate participant list
+    const participantList = `
+        <ul id="participant-list" class="sidebar-list">
+        </ul>
+    `;
+    participantArea.append(participantList);
+
+    $.each(res, (index, participant) => {
+        const username = participant.replace(/-/g, "");
+        const userElement = `
+            <li class="sidebar-list-item" id="${username}">
+                <div class="sidebar-item">
+                    <span class="sidebar-icon">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-person-circle" viewBox="0 0 16 16">
+                            <path d="M11 6a3 3 0 1 1-6 0 3 3 0 0 1 6 0z"/>
+                            <path fill-rule="evenodd" d="M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8zm8-7a7 7 0 0 0-5.468 11.37C3.242 11.226 4.805 10 8 10s4.757 1.225 5.468 2.37A7 7 0 0 0 8 1z"/>
+                        </svg>
+                    </span>
+                    <span class="sidebar-label">${participant}</span>
+                </div>
+            </li>
+        `;
+        $('#participant-list').append(userElement);
+    });
+
+    // add event listener to search input
+    $('#participant-search').on('input', () => {
+        const searchQuery = $('#participant-search').val().toLowerCase();
+        const participantListItems = $('#participant-list li');
+
+        // filter participant list items based on search query
+        participantListItems.each((index, participantListItem) => {
+            const participantName = $(participantListItem).find('.sidebar-label').text().toLowerCase();
+            if (participantName.includes(searchQuery)) {
+                $(participantListItem).show();
+            } else {
+                $(participantListItem).hide();
+            }
+        });
+    });
+});
 
                 let audio = null;
                 let soundFiles = [
@@ -219,7 +255,7 @@
                         // Create a new Audio object for the next sound
                         audio = new Audio(soundFiles[currentSoundIndex]);
                         audio.loop = false;
-                        audio.volume = 0.5;
+                        audio.volume = 0.3;
 
                         // Add an event listener to the ended event
                         audio.addEventListener('ended', () => {

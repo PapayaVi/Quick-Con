@@ -79,7 +79,7 @@ db.execute(`
           PRIMARY KEY (id)
         );
       `).then(() => {
-        console.log('Chat messages table created');
+        
       }).catch((err) => {
         console.error('Error creating chat messages table:', err);
       });
@@ -120,7 +120,6 @@ io.on('connection', (socket) => {
         
 
         socket.on('add_participant', () => {
-                console.log("connected"+adapter.participants.length)
                 io.emit('participant_connect', adapter.participants)
         });
 
@@ -131,10 +130,9 @@ io.on('connection', (socket) => {
                 }
                 const msg = `${socket.username} has left...`;
                 io.emit('user_disconnect', {message: msg, time: getCurrentTime(), user: socket.username });
-                console.log("disconnected"+adapter.participants.length)
                 if(adapter.participants.length === 0){ // might need to change this
                         db.execute('truncate table chat_messages').then((result) => {
-                                console.log("room cleared...")
+                               
                         })
                         .catch((err) => {
                                 console.error('Error saving message:', err);
@@ -188,6 +186,13 @@ io.on('connection', (socket) => {
                 console.log(err.context); // some additional context, for example the XMLHttpRequest object
               });
 });
+
+app.get('/test', (req, res) => {
+        res.render('home2');
+});
+
+// Set up Socket.IO to handle connections and events
+
 
 server.listen(3000, () => {
         console.log('Server is now live at --- \u001b[1;32m http://localhost:'+port);

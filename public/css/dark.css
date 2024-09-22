@@ -61,6 +61,7 @@ body {
     display: flex;
     flex-direction: row;
     height: calc(100vh - 60px);
+    width: 200vh;
    
 }
 .wrapper::before {
@@ -76,6 +77,7 @@ body {
     background-repeat: no-repeat;
     opacity: 0.1; /* adjust the opacity value as needed */
     animation: fadeIn 0.5s ease-in-out; /* add animation effect */
+    pointer-events: none; /* add this property to allow events to pass through */
 }
 .wrapper.fade-out::before {
     animation: fadeOut 0.8s ease-in-out; /* add animation effect */
@@ -90,8 +92,8 @@ body {
 .chat-area {
     width: 100%;
     padding: 20px;
-    max-height: 80vh;
-    /* Add this line */
+    /* max-height: 80vh; */
+
     overflow-y: auto;
     height: 100%;
 }
@@ -248,3 +250,75 @@ form:hover {
     background-color: #666; /* Darker gray background color when checked */
     border-color: #666; /* Darker gray border color when checked */
 }
+.message-left {
+    text-align: left;
+    margin-right: auto;
+    display: block; /* change to block */
+    width: max-content; /* add this property to allow expansion */
+    overflow-y: auto; /* add this property to enable vertical scrolling */
+  }
+  
+  .message-right {
+    text-align: left;
+    margin-left: auto;
+    display: block; /* change to block */
+    width: max-content; /* add this property to allow expansion */
+    overflow-y: auto; /* add this property to enable vertical scrolling */
+  }
+  
+  .message-text {
+    word-wrap: break-word;
+  }
+  #participantarea {
+    height: 300px; /* adjust the height as needed */
+    overflow-y: auto;
+}
+#participant-search {
+    width: 100%;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 20px; /* add this to make the search bar pill-shaped */
+    background-color: #343a40; /* add this to make the background transparent */
+    margin-bottom: 10px;
+}
+
+#participant-search::placeholder {
+    color: #fff; /* add this to make the placeholder text white */
+    opacity: 0.5; /* add this to make the placeholder text slightly transparent */
+}
+
+#participant-search:focus {
+    outline: none; /* add this to remove the white outline */
+    box-shadow: none; /* add this to remove the default focus box shadow */
+    border: none; /* add this to remove the default focus border */
+}
+#participant-search {
+    font-size: 16px;
+    font-weight: 400;
+    line-height: 1.5;
+    color: #fff; /* add this to make the text white */
+}
+
+#participant-search::-webkit-input-placeholder {
+    color: #fff; /* add this to make the placeholder text white */
+    opacity: 0.5; /* add this to make the placeholder text slightly transparent */
+}
+
+#participant-search::-moz-placeholder {
+    color: #fff; /* add this to make the placeholder text white */
+    opacity: 0.5; /* add this to make the placeholder text slightly transparent */
+}
+
+#participant-search:-ms-input-placeholder {
+    color: #fff; /* add this to make the placeholder text white */
+    opacity: 0.5; /* add this to make the placeholder text slightly transparent */
+}
+.wrapper video {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    z-index: -1;
+  }
