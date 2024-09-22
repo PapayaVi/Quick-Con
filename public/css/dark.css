@@ -313,12 +313,8 @@ form:hover {
     color: #fff; /* add this to make the placeholder text white */
     opacity: 0.5; /* add this to make the placeholder text slightly transparent */
 }
-.wrapper video {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    z-index: -1;
+  .no-result {
+    font-size: 14px;
+    color: #666;
+    margin-left: 10px;
   }

@@ -220,19 +220,31 @@
 
     // add event listener to search input
     $('#participant-search').on('input', () => {
+        
         const searchQuery = $('#participant-search').val().toLowerCase();
         const participantListItems = $('#participant-list li');
-
+      
         // filter participant list items based on search query
         participantListItems.each((index, participantListItem) => {
-            const participantName = $(participantListItem).find('.sidebar-label').text().toLowerCase();
-            if (participantName.includes(searchQuery)) {
-                $(participantListItem).show();
-            } else {
-                $(participantListItem).hide();
-            }
+          const participantName = $(participantListItem).find('.sidebar-label').text().toLowerCase();
+          if (participantName.includes(searchQuery)) {
+            $(participantListItem).show();
+          } else {
+            $(participantListItem).hide();
+          }
         });
-    });
+      
+        // check if there are any visible participant list items
+        const visibleParticipantListItems = participantListItems.filter((index, participantListItem) => $(participantListItem).is(':visible'));
+      
+        // if there are no visible participant list items, show the "no result" text
+        if (visibleParticipantListItems.length === 0) {
+          $('#participant-list').append('<li class="sidebar-list-item no-result">No results found</li>');
+        } else {
+          // if there are visible participant list items, remove the "no result" text
+          $('.no-result').remove();
+        }
+      });
 });
 
                 let audio = null;
@@ -314,6 +326,7 @@
                 });
 
                 $('.wrapper').css('--bg-image', `url(${images[0]})`);
+                
         });
     </script>
 </body>
