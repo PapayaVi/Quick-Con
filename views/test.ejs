@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>quickCon | chat</title>
+    <link rel="icon" type="image/x-icon" href="https://img.icons8.com/arcade/64/omori-sprite.png" width="64" height="64" >
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery-contextmenu/2.7.1/jquery.contextMenu.min.css">
+    <link href="/css/test.css" rel="stylesheet"/>
+  
+</head>
+<body>
+  <div class="container-fluid">
+      <!-- <div class="row">
+        <header class="navbar sticky-top">
+          <div class="navbar-title">quickCon</div>
+          <div class="navbar-user">
+              <span class="navbar-user-icon">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-person-circle" viewBox="0 0 16 16">
+                      <path d="M11 6a3 3 0 1 1-6 0 3 3 0 0 1 6 0z"/>
+                      <path fill-rule="evenodd" d="M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8zm8-7a7 7 0 0 0-5.468 11.37C3.242 11.226 4.805 10 8 10s4.757 1.225 5.468 2.37A7 7 0 0 0 8 1z"/>
+                  </svg>
+              </span>
+              <span class="navbar-user-name" id="username"></span>
+          </div>
+        </header>
+      </div> -->
+
+      <div class="wrapper justify-content-center">
+        <div class="row gap-4" style="height: 100%;">
+
+          <div class="panel col-2 p-2" style="background-color: red;">
+            <div class="room-container" >
+            </div>
+          </div>
+
+          <div class="panel col-6 p-2" >
+            <div class="chat-container" >
+              <div class="container-header sticky-top">
+                General
+              </div>
+              <div class="message-area">
+              </div>
+              <div class="input-container">
+                <form id="chat" autocomplete="off">
+                  <input type="text" id="chat-input" placeholder="Type a message...">
+                  <img class="chat-feature gif-icon" tabindex="0" src="https://cdn.glitch.global/ac4ea90c-58fd-4432-88fe-46984e31c59b/gif-square_10742203.png" data-bs-container="body" data-bs-toggle="popover"  data-bs-title="Emoji Search" data-bs-auto-close="outside" data-bs-placement="top" data-bs-content="."/>
+                  <img class="chat-feature emoji-icon rounded-pill" src="https://cdn.glitch.global/ac4ea90c-58fd-4432-88fe-46984e31c59b/emoji1.PNG" />
+                </form>
+              </div>
+            </div>
+          </div>
+
+          <div class="panel col-2  p-2" >
+            <div class="participant-container" >
+              <div class="container-header sticky-top">
+                Participants
+              </div>
+              <ul class="participant-container-list" id="participantarea">
+              </ul>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    
+  </div>
+    <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://code.jquery.com/jquery-3.7.1.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-contextmenu/2.7.1/jquery.contextMenu.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-contextmenu/2.7.1/jquery.ui.position.js"></script>
+    <script src="/js/bgchanger.js"></script>
+
+    <script>
+      
+      $(document).ready(function (e) {
+          let currentIndex = 0;
+          const wrapper = $('.wrapper'); // cache the wrapper element
+          const changeDelay = 10000; // change background every 10 seconds
+          const fadeOutDelay = 1000; // fade out delay
+
+          function changeBackground() {
+            const backgroundImage = `url('${images[currentIndex]}')`;
+            currentIndex = (currentIndex + 1) % images.length; // loop through the array
+            wrapper.addClass('fade-out');
+            setTimeout(function () {
+              wrapper.css('--bg-image', `${backgroundImage}`);
+              wrapper.removeClass('fade-out');
+              setTimeout(changeBackground, changeDelay);
+            }, fadeOutDelay);
+          }
+          changeBackground();
+          var socket = io({
+            withCredentials: true
+          });
+          let client_username = '';
+          socket.on('user_connect', (res) => {
+            client_username = res;
+            socket.emit('add_participant')
+          });
+          socket.on('participant_connect', (res) => {
+            const participantArea = $('#participantarea');
+            participantArea.empty();
+
+            // Create search input and participant list
+            const searchInput = `
+            <input type="text" id="participant-search" placeholder="Search participants...">
+          `;
+            const participantList = `
+            <ul id="participant-container-list-container" class="participant-container-list">
+            </ul>
+          `;
+            participantArea.append(searchInput).append(participantList);
+            $.each(res, (index, participant) => {
+              const username = participant.replace(/-/g, "");
+              const userElement = `
+              <li class="participant-container-list-item" id=${username}>
+                <div class="sidebar-item">
+                  <span class="sidebar-icon">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-person-circle profile-picture" viewBox="0 0 16 16">
+                      <path d="M11 6a3 3 0 1 1-6 0 3 3 0 0 1 6 0z"/>
+                      <path fill-rule="evenodd" d="M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8zm8-7a7 7 0 0 0-5.468 11.37C3.242 11.226 4.805 10 8 10s4.757 1.225 5.468 2.37A7 7 0 0 0 8 1z"/>
+                    </svg>
+                  </span>
+                  <span class="sidebar-label">${participant}</span>
+                </div>
+              </li>
+            `;
+              $('#participant-container-list-container').append(userElement);
+            });
+
+            // Add search functionality
+            $('#participant-search').on('input', () => {
+              const searchQuery = $('#participant-search').val().toLowerCase();
+              const participantListItems = $('#participant-container-list-container li');
+
+              participantListItems.each((index, participantListItem) => {
+                const participantName = $(participantListItem).find('.sidebar-label').text().toLowerCase();
+                $(participantListItem).toggle(participantName.includes(searchQuery));
+              });
+
+              const visibleParticipantListItems = participantListItems.filter((index, participantListItem) => $(participantListItem).is(':visible'));
+              if (visibleParticipantListItems.length === 0) {
+                $('#participant-container-list-container').append('<li class="participant-container-list-item no-result">No results found</li>');
+              } else {
+                $('.no-result').remove();
+              }
+            });
+          });
+          socket.on('user_disconnect', (res) => {
+            const username = res.user.replace(/-/g, "");
+
+            $(`#${username}`).fadeOut('fast', () => {
+              $(this).remove();
+            });
+
+          });
+          $.contextMenu({
+            selector: '.participant-container-list-item',
+            items: {
+              copy: {
+                name: "Copy username",
+                callback: function (key, opt) {
+                  var $listItem = $(this);
+                  var $participantName = $listItem.find('span.sidebar-label');
+                  var text = $participantName.text();
+                  var textarea = document.createElement('textarea');
+                  textarea.value = text;
+                  document.body.appendChild(textarea);
+                  textarea.select();
+                  document.execCommand('copy');
+                  document.body.removeChild(textarea);
+                }
+              }
+            }
+          });
+
+          let currentEmojiIndex = 0
+          var emojiImages = [
+            { name: "emoji1", tooltip: "hello" },
+            { name: "emoji2", tooltip: "1" },
+            { name: "emoji3", tooltip: "2" },
+            { name: "emoji4", tooltip: "3" },
+            { name: "emoji5", tooltip: "4" },
+            { name: "emoji6", tooltip: "5" },
+            { name: "emoji7", tooltip: "6" },
+            { name: "emoji8", tooltip: "7" },
+            { name: "emoji9", tooltip: "8" }
+          ];
+          $(".emoji-icon").mouseenter(function () {
+            $(this).attr("src", `https://cdn.glitch.global/ac4ea90c-58fd-4432-88fe-46984e31c59b/${emojiImages[currentIndex].name}.PNG`);
+            currentIndex = (currentIndex + 1) % images.length;
+          });
+          const popoverTriggerList = document.querySelectorAll('[data-bs-toggle="popover"]')
+          const popoverList = [...popoverTriggerList].map(popoverTriggerEl => new bootstrap.Popover(popoverTriggerEl))
+
+          const popover = new bootstrap.Popover('.gif-icon', {
+            html: true,
+            title: 'GIF | search',
+            sanitize: false, // Allow HTML content in the popover
+            container: 'body', // Append the popover to the body element
+            width: 300, // Set a fixed width for the popover
+          });
+
+          $(document).on('shown.bs.popover', function (e) {
+
+            const $popoverBody = $('.popover-body');
+
+            // Create the search input and results container
+            const searchInput = $('<input type="text" id="gif-search" placeholder="e.g. kel cool backflip...">');
+            const searchResultsContainer = $('<div id="gif-search-results"></div>');
+
+            // Populate the popover body with the search input and results container
+            $popoverBody.append(searchInput);
+            $popoverBody.append(searchResultsContainer);
+
+            // Add some basic CSS styles to the search input and results container
+            searchInput.css({
+              'width': '100%',
+              'padding': '10px',
+              'border': '1px solid #ccc'
+            });
+            searchResultsContainer.css({
+              'padding': '10px'
+            });
+
+            // Attach the event listener to the search input
+            searchInput.on('input', function () {
+              const query = $(this).val();
+              axios.get(`https://api.giphy.com/v1/gifs/search?api_key=SjGkqU46jwFhrqF4hcy5XD6E7HFgGzxt&q=${query}&limit=10&offset=0&rating=g&lang=en&bundle=messaging_non_clips`)
+                .then(response => {
+                  const gifs = response.data.data;
+                  const searchResultsHtml = gifs.map(gif => {
+                    if (gif.images && gif.images.fixed_height && gif.images.fixed_height.url) {
+                      return `<img src="${gif.images.fixed_height.url}" alt="${gif.title}">`;
+                    } else {
+                      return '';
+                    }
+                  }).join('');
+                  searchResultsContainer.html(searchResultsHtml);
+                })
+                .catch(error => {
+                  console.error(error);
+                });
+            });
+          });
+
+          $(document).on('shown.bs.popover', '.gif-icon', function () {
+            $(this).css('opacity', 1);
+          });
+
+          $(document).on('hidden.bs.popover', '.gif-icon', function () {
+            $(this).css('opacity', 0.4);
+          });
+
+          $('#chat-input').on('focus', function() {
+            $('.chat-feature').addClass('focused');
+          });
+
+          $('#chat-input').on('blur', function() {
+            $('.chat-feature').removeClass('focused');
+          });
+
+          function getCurrentTimeFormatted() {
+            const date = new Date();
+            const hours = date.getHours();
+            const minutes = date.getMinutes();
+            const ampm = hours >= 12 ? 'PM' : 'AM';
+            const hours12 = hours % 12;
+            const hours12String = hours12 === 0 ? '12' : hours12.toString();
+            const minutesString = minutes.toString().padStart(2, '0');
+            return `${hours12String}:${minutesString} ${ampm}`;
+          }
+          let isScrolling = false;
+          const chatInput = $('#chat-input');
+          const chatArea = $('.message-area');
+          let prevUserMessage = ''; //change to userID
+
+          $('#chat').submit(function (e) {
+            e.preventDefault();
+            const getName = client_username //change to userID
+            const message = $('#chat-input').val();
+            if (message.trim() === '') {
+              chatInput.tooltip('show');
+              return;
+            } else {
+              socket.emit('chat message', message, getName); //change to userID
+              chatInput.val(''); 
+            }
+          });
+          
+          let isScrolledUp = false;
+          chatArea.on('scroll', function() {
+            if (chatArea[0].scrollHeight - (chatArea.scrollTop() + chatArea.innerHeight()) >= 420 ) {
+              isScrolledUp = true;
+            } else {
+              isScrolledUp = false;
+            }
+          });
+
+          socket.on('chat message', (res) => {
+            prevUserMessage = res.user;
+            const msg_time = `${res.user} - ${getCurrentTimeFormatted()}`
+            const msg_feed = `
+              <div class="${res.user === client_username ? 'message-right' : 'message-left'}">
+                <div class="message-wrapper">
+                  <div class="message">
+                    <span class="message-time">${msg_time}</span>
+                    <div>
+                      ${res.user === client_username ? '' : '<img src="https://cdn.glitch.global/ac4ea90c-58fd-4432-88fe-46984e31c59b/9.jpg" class="profile-picture" alt="Profile Picture">'}
+                      
+                      <span class="message-text">${res.message}</span>
+                    </div>
+                  </div>
+                </div>
+              </div>`;
+            chatArea.append(msg_feed);
+            
+            if (!isScrolledUp) {
+              chatArea.scrollTop(chatArea[0].scrollHeight);
+            }
+          });
+        });
+      
+    </script>
+</body>
+</html>

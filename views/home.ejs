@@ -7,6 +7,7 @@
     <link rel="icon" type="image/x-icon" href="https://img.icons8.com/arcade/64/omori-sprite.png" width="64" height="64" >
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" />
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery-contextmenu/2.7.1/jquery.contextMenu.min.css">
     <link href="/css/dark.css" rel="stylesheet"/>
   
 </head>
@@ -23,311 +24,339 @@
             <span class="navbar-user-name" id="username"></span>
         </div>
     </div>
-        <div class="wrapper">
-                <div class="chat-container">
-                        <div class="chat-area">
-                                
-                        </div>
-                        <form id="chat" class="chat-form" autocomplete="off">
-                                <div class="input-area">
-                                        <input type="text" class="input-box" id="chatbox" placeholder="Type your message..." data-toggle="tooltip" data-placement="top" title="Please enter a message!">
-                                </div>
-                        </form>
-                        
-                        
-                </div>
-                <div class="sidebar">
-                        <div class="sidebar-header">Participants</div>
-                        <ul class="sidebar-list" id="participantarea">
-                                <input type="text" id="participant-search" placeholder="Search participants...">
-                                <ul id="participant-list" class="sidebar-list">
-                                <!-- participant list items will be generated dynamically -->
-                                </ul>
-                        </ul>
-
-                        <div class="sidebar-header">AudioPlayer</div>
-                        <ul class="sidebar-list">
-                                <li class="sidebar-list-item">
-                                        <div class="sidebar-item">
-                                                <button type="button" class="btn btn-outline-secondary" id="soundboard-button-play">
-                                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-play" viewBox="0 0 16 16">
-                                                                <path d="M10.804 8 5 4.633v6.734zm.792-.696a.802.802 0 0 1 0 1.392l-6.363 3.692C4.713 12.69 4 12.345 4 11.692V4.308c0-.653.713-.998 1.233-.696z"/>
-                                                        </svg>
-                                                </button>
-                                                <span class="sidebar-label">Play</span>
-
-                                        </div>
-                                        
-                                        <div class="sidebar-item">
-                                                <button type="button" class="btn btn-outline-secondary" id="soundboard-button-stop">
-                                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-stop-fill" viewBox="0 0 16 16">
-                                                                <path d="M5 3.5h6A1.5 1.5 0 0 1 12.5 5v6a1.5 1.5 0 0 1-1.5 1.5H5A1.5 1.5 0 0 1 3.5 11V5A1.5 1.5 0 0 1 5 3.5"/>
-                                                        </svg>
-                                                </button>
-                                                <span class="sidebar-label">Stop</span>
-
-                                        </div>
-
-                                </li>
-                        </ul>
-                        <div class="sidebar-header">Background</div>
-                        <ul class="sidebar-list">
-                                <li class="sidebar-list-item">
-                                        <div class="sidebar-item">
-                                                <button type="button" class="btn btn-outline-secondary" id="changebg">
-                                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-toggles2" viewBox="0 0 16 16">
-                                                        <path d="M9.465 10H12a2 2 0 1 1 0 4H9.465c.34-.588.535-1.271.535-2s-.195-1.412-.535-2"></path>
-                                                        <path d="M6 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6m0 1a4 4 0 1 1 0-8 4 4 0 0 1 0 8m.535-10a4 4 0 0 1-.409-1H4a1 1 0 0 1 0-2h2.126q.138-.534.41-1H4a2 2 0 1 0 0 4z"></path>
-                                                        <path d="M14 4a4 4 0 1 1-8 0 4 4 0 0 1 8 0"></path>
-                                                        </svg>
-                                                </button>
-                                                <span class="sidebar-label">Next</span>
-
-                                        </div>
-
-                                </li>
-                        </ul>
-                        
-                </div>
+    <div class="wrapper">
+      <div class="chat-container">
+        
+        <div class="message-area">
         </div>
+
+        <div class="typing-area">
+          <div>
+            <button class="btn btn-outline-secondary dropdown-toggle text-light" id="typing-area-dropdown" type="button" data-bs-toggle="dropdown">GIF</button>
+            <ul class="dropdown-menu dropdown-menu-dark" >
+              <!-- dropdown list items here -->
+              <li>
+                <a class="dropdown-item text-light" href="#">
+                    <svg viewBox="0 0 21 21" xmlns="http://www.w3.org/2000/svg" fill="#000000" width="48" height="48">
+                      <g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <g fill="none" fill-rule="evenodd" stroke="#000000" stroke-linecap="round" stroke-linejoin="round"> <path d="m6.5 8.5v4"></path> <path d="m8.5 6.5v9"></path> <path d="m10.5 9.5v2"></path> <path d="m12.5 7.5v6.814"></path> <path d="m14.5 4.5v12"></path> </g> </g>
+                    </svg>
+                    
+                    Record audio
+                </a>
+              </li>
+              <li><hr class="dropdown-divider"></li>
+              <li><a class="dropdown-item text-light" href="#">
+                GIF
+              </a></li>
+            </ul>
+          </div>
+          <form id="chat" class="chat-form me-4 w-50 rounded-pill"  autocomplete="off">
+            <div class="chat-text-div rounded-pill" >
+              <div class="input-group ms-1" >
+                <input type="text" id="chatbox" class="form-control chat-text-input rounded-pill" placeholder="type your message here...">
+              </div>
+            </div>
+          </form>
+        </div>
+              
+              
+      </div>
+
+      
+      <div>
+        <button id="sidebar-toggle" class="btn btn-outline-secondary">
+          <svg id="sidebar-toggle-arrow-left" style="display: none;" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-chevron-left" viewBox="0 0 16 16">
+            <path id="sidebar-toggle-arrow-left" fill-rule="evenodd" d="M11.354 1.646a.5.5 0 0 1 0 .708L5.707 8l5.647 5.646a.5.5 0 0 1-.708.708l-6-6a.5.5 0 0 1 0-.708l6-6a.5.5 0 0 1 .708 0z"/>
+          </svg>
+          <svg id="sidebar-toggle-arrow-right"  xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-chevron-right" viewBox="0 0 16 16">
+            <path fill-rule="evenodd" d="M4.646 1.646a.5.5 0 0 1 0 .708L10.293 8l-5.647 5.646a.5.5 0 0 1 .708.708l6-6a.5.5 0 0 1 0-.708l-6-6a.5.5 0 0 1-.708 0z"/>
+          </svg>
+        </button>
+      </div>
+      <div class="sidebar">
+        <div class="sidebar-header">
+          Participants
+        </div>
+        <ul class="sidebar-list" id="participantarea">
+          <input type="text" id="participant-search" placeholder="Search participants...">
+          <ul id="participant-list" class="sidebar-list">
+          </ul>
+        </ul>
+
+        <div class="sidebar-header">AudioPlayer</div>
+        <ul class="sidebar-list">
+          <li class="sidebar-list-item">
+            <div class="sidebar-item">
+              <button type="button" class="btn btn-outline-secondary" id="soundboard-button-play">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-play" viewBox="0 0 16 16">
+                  <path d="M10.804 8 5 4.633v6.734zm.792-.696a.802.802 0 0 1 0 1.392l-6.363 3.692C4.713 12.69 4 12.345 4 11.692V4.308c0-.653.713-.998 1.233-.696z"/>
+                </svg>
+              </button>
+              <span class="sidebar-label">Play</span>
+            </div>
+            <div class="sidebar-item">
+              <button type="button" class="btn btn-outline-secondary" id="soundboard-button-stop">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-stop-fill" viewBox="0 0 16 16">
+                  <path d="M5 3.5h6A1.5 1.5 0 0 1 12.5 5v6a1.5 1.5 0 0 1-1.5 1.5H5A1.5 1.5 0 0 1 3.5 11V5A1.5 1.5 0 0 1 5 3.5"/>
+                </svg>
+              </button>
+              <span class="sidebar-label">Stop</span>
+            </div>
+          </li>
+        </ul>
+        <div class="sidebar-header">Background</div>
+        <ul class="sidebar-list">
+          <li class="sidebar-list-item">
+            <div class="sidebar-item">
+              <button type="button" class="btn btn-outline-secondary" id="changebg">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-toggles2" viewBox="0 0 16 16">
+                  <path d="M9.465 10H12a2 2 0 1 1 0 4H9.465c.34-.588.535-1.271.535-2s-.195-1.412-.535-2"></path>
+                  <path d="M6 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6m0 1a4 4 0 1 1 0-8 4 4 0 0 1 0 8m.535-10a4 4 0 0 1-.409-1H4a1 1 0 0 1 0-2h2.126q.138-.534.41-1H4a2 2 0 1 0 0 4z"></path>
+                  <path d="M14 4a4 4 0 1 1-8 0 4 4 0 0 1 8 0"></path>
+                </svg>
+              </button>
+              <span class="sidebar-label">Next</span>
+            </div>
+          </li>
+        </ul>
+      </div>
+    </div>
     <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="https://code.jquery.com/jquery-3.7.1.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-contextmenu/2.7.1/jquery.contextMenu.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-contextmenu/2.7.1/jquery.ui.position.js"></script>
     <script src="/js/bgchanger.js"></script>
     <script>
-        $(document).ready(function (e) {
-                
-                var socket = io();
-                let isScrolling = false;
-                const participantArea = $('#participantarea');
-                const chatArea = $('.chat-area');
-               
-                function getCurrentTime() {
-                        const date = new Date();
-                        const hours = date.getHours();
-                        const minutes = date.getMinutes();
-                        const ampm = hours >= 12 ? 'PM' : 'AM';
-                        const hours12 = hours % 12;
-                        const hours12String = hours12 === 0 ? '12' : hours12.toString();
-                        const minutesString = minutes.toString().padStart(2, '0');
-                        return `${hours12String}:${minutesString} ${ampm}`;
-                }
+      $(document).ready(function (e) {
+        $.contextMenu({
+          selector: '#participant-username',
+          items: {
+              copy: {
+                  name: "Copy name",
+                  callback: function(key, opt){
+                    var $listItem = $(this); 
+                    var $participantName = $listItem.find('span.sidebar-label'); 
+                    var text = $participantName.text();
+                    var textarea = document.createElement('textarea');
+                    textarea.value = text;
+                    document.body.appendChild(textarea);
+                    textarea.select();
+                    document.execCommand('copy');
+                    document.body.removeChild(textarea);
+                  }
+              }
+          }
+      });
 
-                function fadeOut(audio, duration) {
-                        let startTime = performance.now();
-                        let fadeInterval = setInterval(() => {
-                                let currentTime = performance.now();
-                                let elapsed = currentTime - startTime;
-                                let volume = 1 - (elapsed / duration);
-                                audio.volume = volume;
-                                if (elapsed >= duration) {
-                                        clearInterval(fadeInterval);
-                                        audio.pause();
-                                        audio.currentTime = 0;
-                                }
-                        }, 10);
-                }
+        var socket = io();
+        let isScrolling = false;
+        let isSameUser= '';
+        const participantArea = $('#participantarea');
+        const chatArea = $('.message-area');
 
-                $('#chat').submit(function (e) {
-                        e.preventDefault();
-                        const getName = $('#username').text()
-                        const message = $('#chatbox').val();
-                        if (message.trim() === '') {
-                                $('#chatbox').tooltip('show');
-                                return;
-                        }else{
-                                socket.emit('chat message', message, getName);
-                                $('#chatbox').val(''); // clear input field
-                        }
-                });
-                                
-                socket.on('chat message', (res) => {
-                        const msg_time = `${res.user} - ${getCurrentTime()}`
-                        
-                        const msg_feed = `
-                        <div class="${res.user === $('#username').text() ? 'message-right' : 'message-left'}">
-                        <span class="message-time">${msg_time}</span>
-                        <div class="message">
-                                <span class="message-text">${res.message}</span>
-                        </div>
-                        </div>`;
-                        
-                        chatArea.append(msg_feed); 
-                        if (!isScrolling) {
-                                chatArea.scrollTop(chatArea[0].scrollHeight);  
-                        }else{
-                                chatArea.animate({ scrollTop: chatArea[0].scrollHeight }, 500);
-                        }
-                });
-                socket.on('user_disconnect', (res) => {
-
-                        const username = res.user.replace(/-/g, "");
-                    
-                        $('#' + username).fadeOut('fast', function() {
-                                $(this).remove();
-                        });
-                        
-                        if (!isScrolling) {
-                                chatArea.scrollTop(chatArea[0].scrollHeight);  
-                              
-                        }else{
-                                chatArea.animate({ scrollTop: chatArea[0].scrollHeight }, 500);
-                        }
-                        
-                        
-                })
-                socket.on('user_connect', (res) => {
-                        $('#username').text(res)
-                        socket.emit('add_participant')
-                });
-                
-                socket.on('participant_connect', (res) => {
-    const participantArea = $('#participantarea');
-    participantArea.empty();
-
-    // add search bar
-    const searchInput = `
-        <input type="text" id="participant-search" placeholder="Search participants...">
-    `;
-    participantArea.append(searchInput);
-
-    // generate participant list
-    const participantList = `
-        <ul id="participant-list" class="sidebar-list">
-        </ul>
-    `;
-    participantArea.append(participantList);
-
-    $.each(res, (index, participant) => {
-        const username = participant.replace(/-/g, "");
-        const userElement = `
-            <li class="sidebar-list-item" id="${username}">
-                <div class="sidebar-item">
-                    <span class="sidebar-icon">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-person-circle" viewBox="0 0 16 16">
-                            <path d="M11 6a3 3 0 1 1-6 0 3 3 0 0 1 6 0z"/>
-                            <path fill-rule="evenodd" d="M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8zm8-7a7 7 0 0 0-5.468 11.37C3.242 11.226 4.805 10 8 10s4.757 1.225 5.468 2.37A7 7 0 0 0 8 1z"/>
-                        </svg>
-                    </span>
-                    <span class="sidebar-label">${participant}</span>
-                </div>
-            </li>
-        `;
-        $('#participant-list').append(userElement);
-    });
-
-    // add event listener to search input
-    $('#participant-search').on('input', () => {
-        
-        const searchQuery = $('#participant-search').val().toLowerCase();
-        const participantListItems = $('#participant-list li');
-      
-        // filter participant list items based on search query
-        participantListItems.each((index, participantListItem) => {
-          const participantName = $(participantListItem).find('.sidebar-label').text().toLowerCase();
-          if (participantName.includes(searchQuery)) {
-            $(participantListItem).show();
+        function getCurrentTimeFormatted() {
+          const date = new Date();
+          const hours = date.getHours();
+          const minutes = date.getMinutes();
+          const ampm = hours >= 12 ? 'PM' : 'AM';
+          const hours12 = hours % 12;
+          const hours12String = hours12 === 0 ? '12' : hours12.toString();
+          const minutesString = minutes.toString().padStart(2, '0');
+          return `${hours12String}:${minutesString} ${ampm}`;
+        }
+        function fadeOut(audio, duration) {
+          let startTime = performance.now();
+          let fadeInterval = setInterval(() => {
+            let currentTime = performance.now();
+            let elapsed = currentTime - startTime;
+            let volume = 1 - (elapsed / duration);
+            audio.volume = volume;
+            if (elapsed >= duration) {
+              clearInterval(fadeInterval);
+              audio.pause();
+              audio.currentTime = 0;
+            }
+          }, 10);
+        }
+        $('#chat').submit(function (e) {
+          e.preventDefault();
+          const getName = $('#username').text() //change to userID
+          const message = $('#chatbox').val();
+          if (message.trim() === '') {
+            $('#chatbox').tooltip('show');
+            return;
           } else {
-            $(participantListItem).hide();
+            socket.emit('chat message', message, getName); //change to userID
+            $('#chatbox').val(''); 
           }
         });
-      
-        // check if there are any visible participant list items
-        const visibleParticipantListItems = participantListItems.filter((index, participantListItem) => $(participantListItem).is(':visible'));
-      
-        // if there are no visible participant list items, show the "no result" text
-        if (visibleParticipantListItems.length === 0) {
-          $('#participant-list').append('<li class="sidebar-list-item no-result">No results found</li>');
-        } else {
-          // if there are visible participant list items, remove the "no result" text
-          $('.no-result').remove();
-        }
-      });
-});
-
-                let audio = null;
-                let soundFiles = [
-                'https://cdn.glitch.global/ac4ea90c-58fd-4432-88fe-46984e31c59b/Dreary%20Night.mp3',
-                'https://cdn.glitch.global/ac4ea90c-58fd-4432-88fe-46984e31c59b/test.mp3'
-                ];
-                let currentSoundIndex = 0;
-                let glowing = false;
-
-                function playNextSound() {
-                        // Increment the sound index
-                        currentSoundIndex = (currentSoundIndex + 1) % soundFiles.length;
-
-                        // Stop the current sound if it's playing
-                        if (audio) {
-                                audio.pause();
-                        }
-
-                        // Create a new Audio object for the next sound
-                        audio = new Audio(soundFiles[currentSoundIndex]);
-                        audio.loop = false;
-                        audio.volume = 0.3;
-
-                        // Add an event listener to the ended event
-                        audio.addEventListener('ended', () => {
-                                // Remove the glowing class when the audio ends
-                                if (glowing) {
-                                        $('#soundboard-button-play').removeClass('glowing');
-                                        glowing = false;
-                                }
-                        });
-
-                        // Play the sound
-                        audio.play();
-
-                        // Emit the soundboardStart event
-                        socket.emit('soundboardStart');
-
-                        // Add the glowing class when the audio starts playing
-                        if (!glowing) {
-                                $('#soundboard-button-play').addClass('glowing');
-                                glowing = true;
-                        }
-                }
-
-                $('#soundboard-button-play').on('click', playNextSound);
-
-                $('#soundboard-button-stop').on('click', () => {
-                        socket.emit('soundboardStop');
-                });
-
-                socket.on('playSound', () => {
-                        if (audio) {
-                                audio.play();
-                        } else {
-                                console.log("no sound file");
-                        }
-                });
-
-                socket.on('stopSound', () => {
-                        if (audio) {
-                                audio.pause();
-                                audio.currentTime = audio.duration;
-                        }
-                        // Remove the glowing class when the audio stops playing
-                        if (glowing) {
-                                $('#soundboard-button-play').removeClass('glowing');
-                                glowing = false;
-                        }
-                });
-                
-                $('.chat-area').on('scroll', () => {
-                        isScrolling = true;
-                });
-
-                $('.chat-area').on('scrollstop', () => {
-                        isScrolling = false;
-                });
-
-                $('.wrapper').css('--bg-image', `url(${images[0]})`);
-                
+        socket.on('chat message', (res) => {
+          const msg_time = `${res.user} - ${getCurrentTimeFormatted()}`
+          const msg_feed = `
+            <div class="${res.user === $('#username').text() ? 'message-right' : 'message-left'}">
+              <div class="message-wrapper">
+                <div class="message">
+                  <span class="message-time">${msg_time}</span>
+                  <div>
+                    ${res.user === $('#username').text() ? '' : '<img src="https://cdn.glitch.global/ac4ea90c-58fd-4432-88fe-46984e31c59b/9.jpg" class="profile-picture" alt="Profile Picture">'}
+                    
+                    <span class="message-text">${res.message}</span>
+                  </div>
+                </div>
+              </div>
+            </div>`;
+          chatArea.append(msg_feed);
+          if (!isScrolling) {
+            chatArea.scrollTop(chatArea[0].scrollHeight);
+          } else {
+            chatArea.animate({ scrollTop: chatArea[0].scrollHeight }, 500);
+          }
         });
+        socket.on('user_disconnect', (res) => {
+          const username = res.user.replace(/-/g, "");
+          $('#' + username).fadeOut('fast', function () {
+            $(this).remove();
+          });
+          if (!isScrolling) {
+            chatArea.scrollTop(chatArea[0].scrollHeight);
+          } else {
+            chatArea.animate({ scrollTop: chatArea[0].scrollHeight }, 500);
+          }
+        })
+        socket.on('user_connect', (res) => {
+          $('#username').text(res)
+          socket.emit('add_participant')
+        });
+        socket.on('participant_connect', (res) => {
+          const participantArea = $('#participantarea');
+          participantArea.empty();
+          const searchInput = `
+            <input type="text" id="participant-search" placeholder="Search participants...">
+        `;
+          participantArea.append(searchInput);
+          const participantList = `
+            <ul id="participant-list" class="sidebar-list">
+            </ul>
+        `;
+          participantArea.append(participantList);
+          $.each(res, (index, participant) => {
+            const username = participant.replace(/-/g, "");
+            const userElement = `
+              <li class="sidebar-list-item" id="participant-username">
+                <div class="sidebar-item">
+                  <span class="sidebar-icon">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-person-circle" viewBox="0 0 16 16">
+                      <path d="M11 6a3 3 0 1 1-6 0 3 3 0 0 1 6 0z"/>
+                      <path fill-rule="evenodd" d="M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8zm8-7a7 7 0 0 0-5.468 11.37C3.242 11.226 4.805 10 8 10s4.757 1.225 5.468 2.37A7 7 0 0 0 8 1z"/>
+                    </svg>
+                  </span>
+                  <span class="sidebar-label">${participant}</span>
+                </div>
+              </li>
+            `;
+            $('#participant-list').append(userElement);
+          });
+          $('#participant-search').on('input', () => {
+            const searchQuery = $('#participant-search').val().toLowerCase();
+            const participantListItems = $('#participant-list li');
+            participantListItems.each((index, participantListItem) => {
+              const participantName = $(participantListItem).find('.sidebar-label').text().toLowerCase();
+              if (participantName.includes(searchQuery)) {
+                $(participantListItem).show();
+              } else {
+                $(participantListItem).hide();
+              }
+            });
+            const visibleParticipantListItems = participantListItems.filter((index, participantListItem) => $(participantListItem).is(':visible'));
+            if (visibleParticipantListItems.length === 0) {
+              $('#participant-list').append('<li class="sidebar-list-item no-result">No results found</li>');
+            } else {
+              $('.no-result').remove();
+            }
+          });
+        });
+        let audio = null;
+        let soundFiles = [
+          'https://cdn.glitch.global/ac4ea90c-58fd-4432-88fe-46984e31c59b/Dreary%20Night.mp3',
+          'https://cdn.glitch.global/ac4ea90c-58fd-4432-88fe-46984e31c59b/test.mp3'
+        ];
+        let currentSoundIndex = 0;
+        let glowing = false;
+        function playNextSound() {
+          currentSoundIndex = (currentSoundIndex + 1) % soundFiles.length;
+          if (audio) {
+            audio.pause();
+          }
+          audio = new Audio(soundFiles[currentSoundIndex]);
+          audio.loop = false;
+          audio.volume = 0.3;
+          audio.addEventListener('ended', () => {
+            if (glowing) {
+              $('#soundboard-button-play').removeClass('glowing');
+              glowing = false;
+            }
+          });
+          audio.play();
+          socket.emit('soundboardStart');
+          if (!glowing) {
+            $('#soundboard-button-play').addClass('glowing');
+            glowing = true;
+          }
+        }
+        $('#soundboard-button-play').on('click', playNextSound);
+        $('#soundboard-button-stop').on('click', () => {
+          socket.emit('soundboardStop');
+        });
+        socket.on('playSound', () => {
+          if (audio) {
+            audio.play();
+          } else {
+            console.log("no sound file");
+          }
+        });
+        socket.on('stopSound', () => {
+          if (audio) {
+            audio.pause();
+            audio.currentTime = audio.duration;
+          }
+          if (glowing) {
+            $('#soundboard-button-play').removeClass('glowing');
+            glowing = false;
+          }
+        });
+        $('.message-area').on('scroll', () => {
+          isScrolling = true;
+        });
+        $('.message-area').on('scrollstop', () => {
+          isScrolling = false;
+        });
+        $('.wrapper').css('--bg-image', `url(${images[0]})`);
+        const sidebar = $('.sidebar');
+        const toggleButton = $('#sidebar-toggle');
+        toggleButton.on('click', () => {
+          $('#sidebar-toggle-arrow-left').toggle()
+          $('#sidebar-toggle-arrow-right').toggle()
+          sidebar.toggleClass('hidden');
+          if (sidebar.hasClass('hidden')) {
+            toggleButton.find('svg').removeClass('bi-chevron-left').addClass('bi-chevron-right');
+            
+          } else {
+            toggleButton.find('svg').removeClass('bi-chevron-right').addClass('bi-chevron-left');
+           
+          }
+        });
+
+        window.addEventListener('resize', () => {
+          if (window.innerWidth <= 480) {
+            sidebar.addClass('hidden');
+          } else {
+            sidebar.removeClass('hidden');
+          }
+        });
+      });
     </script>
 </body>
 </html>

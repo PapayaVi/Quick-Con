@@ -23,7 +23,7 @@ function changeBackgroundImage(imageUrl) {
     
 
 $('#changebg').on('click', function(){
-        currentImageIndex = (currentImageIndex + 1) % images.length;
-        changeBackgroundImage(images[currentImageIndex]);;
+  currentImageIndex = (currentImageIndex + 1) % images.length;
+  changeBackgroundImage(images[currentImageIndex]);;
 });
 
