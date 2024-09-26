@@ -106,9 +106,7 @@ const port = process.env.PORT;
 app.get("/", (req, res) => {
   res.render("home");
 });
-app.get("/test", (req, res) => {
-  res.render("test");
-});
+
 
 app.get("/upload-pic", (req, res) => {
   const file = req.query.file[0]; 
@@ -119,10 +117,13 @@ app.get("/upload-pic", (req, res) => {
 });
 
 io.on("connection", (socket) => {
+  socket.username = generateNickname(adapter.participants);
+  socket.emit("user_connect", socket.username);
+  adapter.participants = adapter.participants || [];
+  adapter.participants.push(socket.username);
 
-  // Load previous messages from the database
   db.execute(
-    "SELECT message,DATE_FORMAT(CONVERT_TZ(created_at, '+00:00', '+08:00'), '%h:%i %p') AS time, temp_user AS user,type FROM chat_messages WHERE type='sent' ORDER BY created_at ASC"
+    "SELECT message,DATE_FORMAT(CONVERT_TZ(created_at, '+00:00', '+08:00'), '%h:%i %p') AS time, temp_user AS user FROM chat_messages ORDER BY created_at ASC"
   )
     .then(([results, fields]) => {
       results.forEach((res_obj) => {
@@ -130,7 +131,6 @@ io.on("connection", (socket) => {
           message: res_obj.message,
           time: res_obj.time,
           user: res_obj.user,
-          type: res_obj.type,
         });
       });
     })
@@ -138,35 +138,7 @@ io.on("connection", (socket) => {
       console.error("Error loading previous messages:", err);
     });
 
-  socket.username = generateNickname(adapter.participants);
-  socket.emit("user_connect", socket.username);
-  adapter.participants = adapter.participants || [];
-  adapter.participants.push(socket.username);
-
-  socket.on("add_participant", () => {
-    io.emit("participant_connect", adapter.participants);
-  });
-
-  socket.on("disconnect", () => {
-    let index = adapter.participants.indexOf(socket.username);
-    if (index !== -1) {
-      adapter.participants.splice(index, 1);
-    }
-    const msg = `${socket.username} has left...`;
-    io.emit("user_disconnect", {
-      message: msg,
-      time: getCurrentTime(),
-      user: socket.username,
-    });
-    if (adapter.participants.length === 0) {
-      // might need to change this
-      db.execute("truncate table chat_messages")
-        .then((result) => {})
-        .catch((err) => {
-          console.error("Error saving message:", err);
-        });
-    }
-  });
+  
 
   socket.on("chat message", (msg) => {
     db.execute(
@@ -197,6 +169,33 @@ io.on("connection", (socket) => {
       });
   });
 
+  socket.on("add_participant", () => {
+    io.emit("participant_connect", adapter.participants);
+  });
+
+  socket.on("disconnect", () => {
+    let index = adapter.participants.indexOf(socket.username);
+    if (index !== -1) {
+      adapter.participants.splice(index, 1);
+    }
+    const msg = `${socket.username} has left...`;
+    io.emit("user_disconnect", {
+      message: msg,
+      time: getCurrentTime(),
+      user: socket.username,
+    });
+    if (adapter.participants.length === 0) {
+      // might need to change this
+      db.execute("truncate table chat_messages")
+        .then((result) => {})
+        .catch((err) => {
+          console.error("Error saving message:", err);
+        });
+    }
+  });
+
+  
+
   //----------------- Fun
   io.on("playSound", (audio) => {
     io.emit("playSound", audio);
@@ -219,9 +218,6 @@ io.on("connection", (socket) => {
   });
 });
 
-app.get("/test", (req, res) => {
-  res.render("home2");
-});
 
 // Set up Socket.IO to handle connections and events
 
