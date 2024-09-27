@@ -16,7 +16,7 @@
     <div class="wrapper justify-content-center">
       <div class="row gap-4" style="height: 100%;">
 
-        <div class="panel col-2 p-2" style="background-color: red;">
+        <div class="panel col-2 p-2" >
           <div class="room-container" >
           </div>
         </div>
@@ -44,6 +44,14 @@
               Participants
             </div>
             <ul class="participant-container-list" id="participantarea" >
+
+
+              <input type="text" id="participant-search" placeholder="Search participants...">
+              <ul id="participant-container-list-container" class="participant-container-list">
+
+              </ul>
+
+
             </ul>
           </div>
         </div>
@@ -59,9 +67,100 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-contextmenu/2.7.1/jquery.contextMenu.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-contextmenu/2.7.1/jquery.ui.position.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@mojs/core"></script>
+    <script>
+      var socket = io({
+          withCredentials: true
+        });
+    </script>
+    <% if (swalFire) { %>
+      <script>
+        function showLoginSwal() {
+          Swal.fire({
+            title: 'Login with Facebook',
+            text: 'Click the button below to login with your Facebook account',
+            icon: 'info',
+            showCancelButton: false,
+            confirmButtonText: '<i class="fa fa-facebook"></i> Login with Facebook',
+            confirmButtonColor: '#3b5998',
+            allowOutsideClick: false,
+            allowEscapeKey: false,
+            allowEnterKey: false,
+            backdrop: true, // blur the background
+            focusConfirm: false, // prevent Swal from being closed by clicking outside
+          }).then((result) => {
+            if (result.isConfirmed) {
+              $.getScript('https://connect.facebook.net/en_US/sdk.js', function(){
+                FB.init({
+                  appId: '<%= $fb.app_id %>',
+                  version: 'v13.0'
+                });
+
+                FB.getLoginStatus(function(response) {
+                  if (response.status === 'connected') {
+                    handleFacebookLogin(response);
+                  } else {
+                    FB.login(function(response) {
+                      if (response.status === 'connected') {
+                        handleFacebookLogin(response);
+                      } else {
+                        showLoginSwal(); 
+                      }
+                    }, {scope: 'public_profile'});
+                  }
+                });
+              });
+            }
+          });
+        }
+
+        function handleFacebookLogin(response) {
+          var accessToken = response.authResponse.accessToken;
+          FB.api('/me', function(response) {
+            var facebookId = response.id;
+            var facebookName = response.name;
+            const $data = {username : facebookName, userId : facebookId}
+            // Store the Facebook ID and name in the session
+            $.ajax({
+              type: 'POST',
+              url: '/set-facebook-session',
+              data: {
+                facebookId: facebookId,
+                facebookName: facebookName
+              },
+              success: function() {
+                socket.emit("participant-connect", $data)
+                Swal.fire({
+                  title: 'Login Successful!',
+                  text: 'You have successfully logged in with your Facebook account.',
+                  icon: 'success',
+                  showCancelButton: false,
+                  confirmButtonText: 'OK',
+                  confirmButtonColor: '#3b5998',
+                  allowOutsideClick: false,
+                  allowEscapeKey: false,
+                  allowEnterKey: false,
+                  backdrop: true, // blur the background
+                  focusConfirm: false, // prevent Swal from being closed by clicking outside
+                }).then({
+                  if(isConfirmed){
+                    window.location.href="/"
+                  }
+                })
+              }
+            });
+          });
+        }
+
+        showLoginSwal();
+      </script>
+    <% } %>
     <script src="/js/mo.js"></script>
     <script>
+      
       $(document).ready(function (e) {
+        let isScrolledUp = false;
+        let isScrolling = false;
+        $.ajaxSetup({ cache: true });
         const asset_url = 'https://cdn.glitch.global/ac4ea90c-58fd-4432-88fe-46984e31c59b/'
         const wrapper = $('.wrapper');
         let currentIndex = 0;
@@ -78,6 +177,7 @@
           'bg8',
           'bg9',
         ]
+
         function changeBackground() {
           const bg_url = `${asset_url}${backgroundImages[currentIndex]}.jpg`;
           const backgroundImage = `url('${bg_url}')`;
@@ -89,32 +189,17 @@
             setTimeout(changeBackground, changeDelay);
           }, fadeOutDelay);
         }
-        changeBackground();
-        var socket = io({
-          withCredentials: true
-        });
-        let client_username = '';
-        socket.on('user_connect', (res) => {
-          client_username = res;
-          socket.emit('add_participant')
-        });
-        socket.on('participant_connect', (res) => {
-          const participantArea = $('#participantarea');
-          participantArea.empty();
 
-          // Create search input and participant list
-          const searchInput = `
-          <input type="text" id="participant-search" placeholder="Search participants...">
-        `;
-          const participantList = `
-          <ul id="participant-container-list-container" class="participant-container-list">
-          </ul>
-        `;
-          participantArea.append(searchInput).append(participantList);
-          $.each(res, (index, participant) => {
-            const username = participant.replace(/-/g, "");
-            const userElement = `
-            <li class="participant-container-list-item" id=${username}>
+        changeBackground();
+
+        socket.emit('request-participant-list', () => {
+          console.log("requesting  participant list");
+
+        });
+
+        function updateParticipant(participant) {
+          const userElement = `
+            <li class="participant-container-list-item" data-user-id="${participant.userId}" data-user-name="${participant.username}">
               <div class="sidebar-item">
                 <span class="sidebar-icon">
                   <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-person-circle profile-picture" viewBox="0 0 16 16">
@@ -122,39 +207,29 @@
                     <path fill-rule="evenodd" d="M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8zm8-7a7 7 0 0 0-5.468 11.37C3.242 11.226 4.805 10 8 10s4.757 1.225 5.468 2.37A7 7 0 0 0 8 1z"/>
                   </svg>
                 </span>
-                <span class="sidebar-label">${participant}</span>
+                <span class="sidebar-label">${participant.username}</span>
               </div>
             </li>
           `;
-            $('#participant-container-list-container').append(userElement);
-          });
+          $('#participant-container-list-container').append(userElement);
+        }
 
-          // Add search functionality
-          $('#participant-search').on('input', () => {
-            const searchQuery = $('#participant-search').val().toLowerCase();
-            const participantListItems = $('#participant-container-list-container li');
-
-            participantListItems.each((index, participantListItem) => {
-              const participantName = $(participantListItem).find('.sidebar-label').text().toLowerCase();
-              $(participantListItem).toggle(participantName.includes(searchQuery));
-            });
-
-            const visibleParticipantListItems = participantListItems.filter((index, participantListItem) => $(participantListItem).is(':visible'));
-            if (visibleParticipantListItems.length === 0) {
-              $('#participant-container-list-container').append('<li class="participant-container-list-item no-result">No results found</li>');
-            } else {
-              $('.no-result').remove();
-            }
+        socket.on('participant-connect', (res) => {
+          const participantContainer = $('#participant-container-list-container');
+          participantContainer.empty();
+          $.each(res, (index, participant) => {
+            updateParticipant(participant);
           });
         });
-        socket.on('user_disconnect', (res) => {
-          const username = res.user.replace(/-/g, "");
 
-          $(`#${username}`).fadeOut('fast', () => {
-            $(this).remove();
+        socket.on('update-participant-list', (res) => {
+          const participantContainer = $('#participant-container-list-container');
+          participantContainer.empty();
+          $.each(res, (index, participant) => {
+            updateParticipant(participant);
           });
-
         });
+
         $.contextMenu({
           selector: '.participant-container-list-item',
           items: {
@@ -190,6 +265,7 @@
           { name: "a_emoji11", tooltip: "8" },
           { name: "a_emoji12", tooltip: "8" },
         ];
+
         $(".emoji-icon").mouseenter(function (e) {
           const heartN = [2, 12];
           const burstN = [10,12];
@@ -199,6 +275,7 @@
           $(this).attr("src", emoji_url);
           currentEmojiIndex = (currentEmojiIndex + 1) % emojiImages.length;
         });
+
         const popoverTriggerList = document.querySelectorAll('[data-bs-toggle="popover"]')
         const popoverList = [...popoverTriggerList].map(popoverTriggerEl => new bootstrap.Popover(popoverTriggerEl))
 
@@ -215,7 +292,7 @@
           const $popoverBody = $('.popover-body');
 
           // Create the search input and results container
-          const searchInput = $('<input type="text" id="gif-search" placeholder="e.g. kel cool backflip...">');
+          const searchInput = $('<input type="text" id="gif-search" placeholder="e.g. kel does cool backflip...">');
           const searchResultsContainer = $('<div id="gif-search-results"></div>');
 
           // Populate the popover body with the search input and results container
@@ -279,25 +356,11 @@
           const minutesString = minutes.toString().padStart(2, '0');
           return `${hours12String}:${minutesString} ${ampm}`;
         }
-        let isScrolling = false;
+
+        
         const chatInput = $('#chat-input');
         const chatArea = $('.message-area');
-        let prevUserMessage = ''; //change to userID
 
-        $('#chat').submit(function (e) {
-          e.preventDefault();
-          const getName = client_username //change to userID
-          const message = $('#chat-input').val();
-          if (message.trim() === '') {
-            chatInput.tooltip('show');
-            return;
-          } else {
-            socket.emit('chat message', message, getName); //change to userID
-            chatInput.val(''); 
-          }
-        });
-        
-        let isScrolledUp = false;
         chatArea.on('scroll', function() {
           if (chatArea[0].scrollHeight - (chatArea.scrollTop() + chatArea.innerHeight()) >= 420 ) {
             isScrolledUp = true;
@@ -306,16 +369,33 @@
           }
         });
 
+        $('#chat').submit(function (e) {
+          e.preventDefault();
+          const message = $('#chat-input').val();
+          if (message.trim() === '') {
+            chatInput.tooltip('show');
+            return;
+          } else {
+            const $message_data = {
+              userId : socket.userId,
+              username : socket.username,
+              message: message,
+            }
+            console.log($message_data)
+            socket.emit('chat message', $message_data);
+            chatInput.val(''); 
+          }
+        });
+
         socket.on('chat message', (res) => {
-          prevUserMessage = res.user;
-          const msg_time = `${res.user} - ${getCurrentTimeFormatted()}`
+          const msg_time = `${res.username} - ${res.time}`
           const msg_feed = `
-            <div class="${res.user === client_username ? 'message-right' : 'message-left'}">
+            <div class="${res.username === socket.username ? 'message-right' : 'message-left'}">
               <div class="message-wrapper">
                 <div class="message">
                   <span class="message-time">${msg_time}</span>
                   <div>
-                    ${res.user === client_username ? '' : '<img src="https://cdn.glitch.global/ac4ea90c-58fd-4432-88fe-46984e31c59b/9.jpg" class="profile-picture" alt="Profile Picture">'}
+                    ${res.username === socket.username ? '' : '<img src="https://cdn.glitch.global/ac4ea90c-58fd-4432-88fe-46984e31c59b/9.jpg" class="profile-picture" alt="Profile Picture">'}
                     
                     <span class="message-text">${res.message}</span>
                   </div>
@@ -328,6 +408,24 @@
             chatArea.scrollTop(chatArea[0].scrollHeight);
           }
         });
+
+        $('#participant-search').on('input', () => {
+            const searchQuery = $('#participant-search').val().toLowerCase();
+            const participantListItems = $('#participant-container-list-container li');
+
+            participantListItems.each((index, participantListItem) => {
+              const participantName = $(participantListItem).find('.sidebar-label').text().toLowerCase();
+              $(participantListItem).toggle(participantName.includes(searchQuery));
+            });
+
+            const visibleParticipantListItems = participantListItems.filter((index, participantListItem) => $(participantListItem).is(':visible'));
+            if (visibleParticipantListItems.length === 0) {
+              $('#participant-container-list-container').append('<li class="participant-container-list-item no-result">No results found</li>');
+            } else {
+              $('.no-result').remove();
+            }
+          });
+
       });
       
     </script>

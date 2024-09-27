@@ -375,3 +375,10 @@ div.panel {
   overflow-y: auto;
   height: 100%;
 }
+
+.room-container{
+  display: flex;
+  flex-direction: column;
+  height: 100%; 
+  padding: 1.4rem;
+}

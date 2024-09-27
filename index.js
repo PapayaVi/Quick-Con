@@ -1,10 +1,12 @@
 const express = require("express");
+const session = require('express-session');
 const app = express();
 const coreJs = require("core-js/stable/object/from-entries");
 require("dotenv").config();
 
 const path = require("path");
 const bodyParser = require("body-parser");
+const axios = require("axios")
 
 const http = require("http");
 const server = http.createServer(app);
@@ -15,17 +17,39 @@ const adapter = io.adapter;
 
 const dbConfig = require("./db.config");
 const mysql = require("mysql2/promise");
+const MySQLStore = require("express-mysql-session")(session);
+
+const $domain = process.env.DEV=='true' ?  process.env.DOMAIN_DEV : process.env.DOMAIN_PROD;
 
 const db = mysql.createPool({
   ...dbConfig,
   namedPlaceholders: true,
 });
+
 const cloudinary = require('cloudinary');
 cloudinary.config({
   cloud_name: process.env.CLOUDINARY_CLOUD,
   api_key: process.env.CLOUDINARY_KEY,
   api_secret: process.env.CLOUDINARY_SECRET
 });
+
+const sessionStore = new MySQLStore({...dbConfig});
+
+const $fb = {
+  redirect:  process.env.DEV=='true' ? process.env.FB_APP_REDIRECT_DEV : process.env.FB_APP_REDIRECT_PROD,
+  app_id: process.env.FB_APP_ID,
+  app_secret: process.env.FB_APP_SECRET
+}
+
+app.use(session({
+  secret: 'your-secret-key',
+  store: sessionStore,
+  resave: false,
+  saveUninitialized: false,
+  cookie: {
+    maxAge: 3600000 // 1 hour
+  }
+}));
 
 const honorifics = ["-san", "-chan", "-kun", "-sensei"];
 const cuteWords = [
@@ -59,7 +83,7 @@ const cuteWords = [
   "Cuddlebug",
   "Lovebug",
 ];
-function generateNickname(a) {
+function generateNickname() {
   const randomCuteWord =
     cuteWords[Math.floor(Math.random() * cuteWords.length)];
   const randomHonorific =
@@ -101,12 +125,13 @@ app.use(express.static("public"));
 app.set("view engine", "ejs");
 app.set("views", path.join(__dirname, "./views"));
 
-const port = process.env.PORT;
-
-app.get("/", (req, res) => {
-  res.render("home");
+app.post('/set-facebook-session', (req, res) => {
+  console.log("setting facebook session");
+  req.session.facebookId = req.body.facebookId;
+  req.session.facebookName = req.body.facebookName;
+  console.log(req.session)
+  res.send('OK');
 });
-
 
 app.get("/upload-pic", (req, res) => {
   const file = req.query.file[0]; 
@@ -116,113 +141,67 @@ app.get("/upload-pic", (req, res) => {
   // });
 });
 
-io.on("connection", (socket) => {
-  socket.username = generateNickname(adapter.participants);
-  socket.emit("user_connect", socket.username);
-  adapter.participants = adapter.participants || [];
-  adapter.participants.push(socket.username);
-
-  db.execute(
-    "SELECT message,DATE_FORMAT(CONVERT_TZ(created_at, '+00:00', '+08:00'), '%h:%i %p') AS time, temp_user AS user FROM chat_messages ORDER BY created_at ASC"
-  )
-    .then(([results, fields]) => {
-      results.forEach((res_obj) => {
-        socket.emit("chat message", {
-          message: res_obj.message,
-          time: res_obj.time,
-          user: res_obj.user,
-        });
-      });
-    })
-    .catch((err) => {
-      console.error("Error loading previous messages:", err);
-    });
-
-  
-
-  socket.on("chat message", (msg) => {
-    db.execute(
-      "INSERT INTO chat_messages (temp_user, message, type) VALUES (:temp_user, :message, :type)",
-      {
-        temp_user: socket.username,
-        message: msg,
-        type: "sent",
-      }
-    )
-      .then((result) => {
-        const insertedId = result[0].insertId;
-
-        db.execute(
-          "SELECT message,DATE_FORMAT(CONVERT_TZ(created_at, '+00:00', '+08:00'), '%h:%i %p') AS time,temp_user AS user,type FROM chat_messages WHERE id = ?",
-          [insertedId]
-        )
-          .then((rows) => {
-            const insertedData = rows[0];
-            io.emit("chat message", insertedData[0]);
-          })
-          .catch((err) => {
-            console.error("Error fetching inserted data:", err);
-          });
-      })
-      .catch((err) => {
-        console.error("Error saving message:", err);
-      });
+app.get('/', (req, res) => {
+  res.render('home', {
+    $fb,
+    facebookId: req.session.facebookId || '',
+    facebookName: req.session.facebookName  || '',
+    swalFire: req.session.facebookId ? false : true,
+    username: req.session.facebookName   || ''
   });
+});
 
-  socket.on("add_participant", () => {
-    io.emit("participant_connect", adapter.participants);
-  });
-
-  socket.on("disconnect", () => {
-    let index = adapter.participants.indexOf(socket.username);
-    if (index !== -1) {
-      adapter.participants.splice(index, 1);
+app.get('/logout', (req, res) => {
+  req.session.destroy((err) => {
+    if (err) {
+      console.log(err);
+    } else {
+      res.redirect('/');
     }
-    const msg = `${socket.username} has left...`;
-    io.emit("user_disconnect", {
-      message: msg,
-      time: getCurrentTime(),
-      user: socket.username,
-    });
-    if (adapter.participants.length === 0) {
-      // might need to change this
-      db.execute("truncate table chat_messages")
-        .then((result) => {})
-        .catch((err) => {
-          console.error("Error saving message:", err);
-        });
-    }
-  });
-
-  
-
-  //----------------- Fun
-  io.on("playSound", (audio) => {
-    io.emit("playSound", audio);
-  });
-  io.on("stopSound", () => {
-    io.emit("stopSound");
-  });
-
-  socket.on("soundboardStart", (audioSrc) => {
-    io.emit("playSound", audioSrc);
-  });
-  socket.on("soundboardStop", () => {
-    io.emit("stopSound");
-  });
-
-  socket.on("connect_error", (err) => {
-    console.log(err.message); // the reason of the error, for example "xhr poll error"
-    console.log(err.description); // some additional description, for example the status code of the initial HTTP response
-    console.log(err.context); // some additional context, for example the XMLHttpRequest object
   });
 });
 
 
-// Set up Socket.IO to handle connections and events
+let participants = [];
+
+io.on('connection', (socket) => {
+
+  
+
+  socket.on('chat message', (data) => {
+    const message_data = {
+      id : data.userId,
+      username : data.username,
+      message : data.message,
+      time : getCurrentTime()
+    }
+    io.emit('chat message', message_data);
+  });
+
+  socket.on('participant-connect', (data) => {
+    // const session = socket.handshake.session;
+    // console.log(session.facebookId)
+    participants.push(data);
+    socket.userId = data.userId
+    socket.username = data.username
+    io.emit('participant-connect', participants);
+  });
+
+  socket.on('request-participant-list', () => {
+    io.emit('update-participant-list', participants);
+  });
+
+  socket.on('disconnect', () => {
+    const index = participants.findIndex((participant) => participant.userId === socket.userId);
+    if (index !== -1) {
+      participants.splice(index, 1);
+    }
+    io.emit('participant-connect', participants);
+  });
+});
 
 server.listen(3000, () => {
   console.log(
-    "Server is now live at --- \u001b[1;32m http://localhost:" + port
+    `Server is now live at --- \u001b[1;32m ${$domain}`
   );
 });
