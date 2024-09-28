@@ -182,15 +182,16 @@ const userlist = {};
 io.on('connection', (socket) => {
 
   socket.on('chat message', (data) => {
-    const $mi = 'INSERT INTO chat_messages (message, userId, username) VALUES (?, ?, ?)';
-    const $mi_values = [data.message, data.userId, data.username];
-    db.execute($mi, $mi_values)
-    .then(() => {
-      io.emit('chat message', data);
-    })
-    .catch((err) => {
-      console.error('Error storing message in database:', err);
-    });
+    io.emit('chat message', data);
+    // const $mi = 'INSERT INTO chat_messages (message, userId, username) VALUES (?, ?, ?)';
+    // const $mi_values = [data.message, data.userId, data.username];
+    // db.execute($mi, $mi_values)
+    // .then(() => {
+    //   io.emit('chat message', data);
+    // })
+    // .catch((err) => {
+    //   console.error('Error storing message in database:', err);
+    // });
   });
 
   socket.on('remove-participant', (id) => {
@@ -201,17 +202,17 @@ io.on('connection', (socket) => {
     io.emit('update-participants-list', userlist);
   });
 
-  socket.on('get-messages',() =>{
-    const $ms = "SELECT message,DATE_FORMAT(CONVERT_TZ(created_at, '+00:00', '+08:00'), '%h:%i %p') AS time, userId, username FROM chat_messages ORDER BY created_at ASC";
-    db.execute($ms)
-      .then((results) => {
-        const messages = results[0];
-        socket.emit('update-messages', messages);
-      })
-      .catch((err) => {
-        console.error('Error retrieving messages from database:', err);
-      });
-  })
+  // socket.on('get-messages',() =>{
+  //   const $ms = "SELECT message,DATE_FORMAT(CONVERT_TZ(created_at, '+00:00', '+08:00'), '%h:%i %p') AS time, userId, username FROM chat_messages ORDER BY created_at ASC";
+  //   db.execute($ms)
+  //     .then((results) => {
+  //       const messages = results[0];
+  //       socket.emit('update-messages', messages);
+  //     })
+  //     .catch((err) => {
+  //       console.error('Error retrieving messages from database:', err);
+  //     });
+  // })
 
   socket.on('save-socket', (data) => {
     socket.userId = data.userId
@@ -219,7 +220,6 @@ io.on('connection', (socket) => {
     const userId = data.userId;
     const username = data.username;
     userlist[userId] = { username };
-    console.log(userlist)
     io.emit('update-participants-list', userlist);
   });
 
@@ -229,6 +229,16 @@ io.on('connection', (socket) => {
       delete userlist[userId];
       io.emit("remove-participant", userId);
     }
+    // if (Object.keys(userlist).length === 0) {
+    //   const $md = "TRUNCATE TABLE chat_messages;";
+    //   db.execute($md)
+    //     .then(() => {
+    //       console.log("cleared messages")
+    //     })
+    //     .catch((err) => {
+    //       console.error('Error retrieving messages from database:', err);
+    //     });
+    // }
   });
 });
 

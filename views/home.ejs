@@ -202,10 +202,9 @@
       </script>
     <% } else{ %>
       <script>
-        //returns app session details 
         verifySession().then((res) =>{
           socket.emit("save-socket", res);
-          socket.emit("get-messages")
+          // socket.emit("get-messages")
        });
         
       </script>
@@ -247,7 +246,6 @@
         }
 
         changeBackground();
-
 
         function addParticipant(participant) {
 
@@ -492,11 +490,11 @@
             chatArea.scrollTop(chatArea[0].scrollHeight);
           }
         });
-        socket.on('update-messages', (data) => {
-          data.forEach((message) => {
-            updateMessages(message);
-          });
-        });
+        // socket.on('update-messages', (data) => {
+        //   data.forEach((message) => {
+        //     updateMessages(message);
+        //   });
+        // });
 
         $('#participant-search').on('input', () => {
             const searchQuery = $('#participant-search').val().toLowerCase();
