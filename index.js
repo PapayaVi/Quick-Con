@@ -7,6 +7,7 @@ require("dotenv").config();
 const path = require("path");
 const bodyParser = require("body-parser");
 const axios = require("axios")
+const uuid = require('uuid');
 
 const http = require("http");
 const server = http.createServer(app);
@@ -126,10 +127,16 @@ app.set("view engine", "ejs");
 app.set("views", path.join(__dirname, "./views"));
 
 app.post('/set-facebook-session', (req, res) => {
-  console.log("setting facebook session");
-  req.session.facebookId = req.body.facebookId;
-  req.session.facebookName = req.body.facebookName;
-  console.log(req.session)
+  req.session.userId = req.body.facebookId;
+  req.session.username = req.body.facebookName;
+  console.log("set fb session",req.session.userId)
+  res.send('OK');
+});
+app.post('/set-guest-session', (req, res) => {
+  req.session.userId  = uuid.v4();
+  req.session.username = generateNickname();
+  console.log("set guest session",req.session.userId)
+
   res.send('OK');
 });
 
@@ -142,13 +149,21 @@ app.get("/upload-pic", (req, res) => {
 });
 
 app.get('/', (req, res) => {
+  console.log("loading home : ",req.session.userId)
   res.render('home', {
     $fb,
-    facebookId: req.session.facebookId || '',
-    facebookName: req.session.facebookName  || '',
-    swalFire: req.session.facebookId ? false : true,
-    username: req.session.facebookName   || ''
+    userId: req.session.userId || '',
+    username: req.session.username  || '',
+    swalFire: req.session.userId ? false : true,
   });
+});
+
+app.get('/get-session', (req, res) => {
+  const $data = {
+    userId: req.session.userId || '',
+    username: req.session.username || '',
+  }
+  res.send($data)
 });
 
 app.get('/logout', (req, res) => {
@@ -156,47 +171,64 @@ app.get('/logout', (req, res) => {
     if (err) {
       console.log(err);
     } else {
+      
       res.redirect('/');
     }
   });
 });
 
-
-let participants = [];
+const userlist = {};
 
 io.on('connection', (socket) => {
 
-  
-
   socket.on('chat message', (data) => {
-    const message_data = {
-      id : data.userId,
-      username : data.username,
-      message : data.message,
-      time : getCurrentTime()
-    }
-    io.emit('chat message', message_data);
+    const $mi = 'INSERT INTO chat_messages (message, userId, username) VALUES (?, ?, ?)';
+    const $mi_values = [data.message, data.userId, data.username];
+    db.execute($mi, $mi_values)
+    .then(() => {
+      io.emit('chat message', data);
+    })
+    .catch((err) => {
+      console.error('Error storing message in database:', err);
+    });
   });
 
-  socket.on('participant-connect', (data) => {
-    // const session = socket.handshake.session;
-    // console.log(session.facebookId)
-    participants.push(data);
+  socket.on('remove-participant', (id) => {
+    io.emit('remove-participant', id);
+  });
+
+  socket.on('update-participants-list', () => {
+    io.emit('update-participants-list', userlist);
+  });
+
+  socket.on('get-messages',() =>{
+    const $ms = "SELECT message,DATE_FORMAT(CONVERT_TZ(created_at, '+00:00', '+08:00'), '%h:%i %p') AS time, userId, username FROM chat_messages ORDER BY created_at ASC";
+    db.execute($ms)
+      .then((results) => {
+        const messages = results[0];
+        socket.emit('update-messages', messages);
+      })
+      .catch((err) => {
+        console.error('Error retrieving messages from database:', err);
+      });
+  })
+
+  socket.on('save-socket', (data) => {
     socket.userId = data.userId
     socket.username = data.username
-    io.emit('participant-connect', participants);
-  });
-
-  socket.on('request-participant-list', () => {
-    io.emit('update-participant-list', participants);
+    const userId = data.userId;
+    const username = data.username;
+    userlist[userId] = { username };
+    console.log(userlist)
+    io.emit('update-participants-list', userlist);
   });
 
   socket.on('disconnect', () => {
-    const index = participants.findIndex((participant) => participant.userId === socket.userId);
-    if (index !== -1) {
-      participants.splice(index, 1);
+    const userId = socket.userId;
+    if (userId in userlist) {
+      delete userlist[userId];
+      io.emit("remove-participant", userId);
     }
-    io.emit('participant-connect', participants);
   });
 });
 

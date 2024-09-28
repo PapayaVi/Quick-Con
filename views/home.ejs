@@ -29,7 +29,7 @@
             <div class="message-area">
             </div>
             <div class="input-container">
-              <form id="chat" autocomplete="off">
+              <form id="chat" autocomplete="off" data-user-id="<%= userId %>" data-user-name="<%= username %>">
                 <input type="text" id="chat-input" placeholder="Type a message...">
                 <img class="chat-feature gif-icon" tabindex="0" src="https://cdn.glitch.global/ac4ea90c-58fd-4432-88fe-46984e31c59b/gif-square_10742203.png" data-bs-container="body" data-bs-toggle="popover"  data-bs-title="Emoji Search" data-bs-auto-close="outside" data-bs-placement="top" data-bs-content="."/>
                 <img class="chat-feature emoji-icon rounded-pill" src="https://cdn.glitch.global/ac4ea90c-58fd-4432-88fe-46984e31c59b/emoji1.PNG" onmouseenter="" />
@@ -71,17 +71,32 @@
       var socket = io({
           withCredentials: true
         });
+
+        async function verifySession() {
+          try {
+            const res = await $.ajax({
+              type: 'GET',
+              url: '/get-session'
+            });
+            return res;
+          } catch (error) {
+            console.log(error);
+            return null
+          }
+        }
     </script>
     <% if (swalFire) { %>
       <script>
         function showLoginSwal() {
           Swal.fire({
-            title: 'Login with Facebook',
-            text: 'Click the button below to login with your Facebook account',
+            title: 'Login Options',
+            text: 'Choose a login option',
             icon: 'info',
             showCancelButton: false,
             confirmButtonText: '<i class="fa fa-facebook"></i> Login with Facebook',
             confirmButtonColor: '#3b5998',
+            showCancelButton: true,
+            cancelButtonText: 'Guest',
             allowOutsideClick: false,
             allowEscapeKey: false,
             allowEnterKey: false,
@@ -109,29 +124,21 @@
                   }
                 });
               });
+            }else{
+              handleGuestLogin()
             }
           });
         }
 
-        function handleFacebookLogin(response) {
-          var accessToken = response.authResponse.accessToken;
-          FB.api('/me', function(response) {
-            var facebookId = response.id;
-            var facebookName = response.name;
-            const $data = {username : facebookName, userId : facebookId}
-            // Store the Facebook ID and name in the session
-            $.ajax({
-              type: 'POST',
-              url: '/set-facebook-session',
-              data: {
-                facebookId: facebookId,
-                facebookName: facebookName
-              },
-              success: function() {
-                socket.emit("participant-connect", $data)
+        function handleGuestLogin(){
+          $.ajax({
+            type: 'POST',
+            url: '/set-guest-session',
+            success: function() {
+              verifySession().then((res) => {
+                socket.emit("save-socket", res);
                 Swal.fire({
                   title: 'Login Successful!',
-                  text: 'You have successfully logged in with your Facebook account.',
                   icon: 'success',
                   showCancelButton: false,
                   confirmButtonText: 'OK',
@@ -141,22 +148,71 @@
                   allowEnterKey: false,
                   backdrop: true, // blur the background
                   focusConfirm: false, // prevent Swal from being closed by clicking outside
-                }).then({
-                  if(isConfirmed){
-                    window.location.href="/"
-                  }
-                })
+                  timer: 1000
+                }).then(() => {
+                  $('#chat').attr({
+                    'data-user-id': res.userId,
+                    'data-user-name': res.username
+                  });
+                });
+              });
+            }
+          });
+        }
+        function handleFacebookLogin(response) {
+          var accessToken = response.authResponse.accessToken;
+          FB.api('/me', function(response) {
+            var userId = response.id;
+            var username = response.name;
+            // Store the Facebook ID and name in the session
+            $.ajax({
+              type: 'POST',
+              url: '/set-facebook-session',
+              data: {
+                facebookId: userId,
+                facebookName: username
+              },
+              success: function() {
+                verifySession().then((res) => {
+                  socket.emit("save-socket", res);
+                  Swal.fire({
+                    title: 'Login Successful!',
+                    icon: 'success',
+                    showCancelButton: false,
+                    confirmButtonText: 'OK',
+                    confirmButtonColor: '#3b5998',
+                    allowOutsideClick: false,
+                    allowEscapeKey: false,
+                    allowEnterKey: false,
+                    backdrop: true, // blur the background
+                    focusConfirm: false, // prevent Swal from being closed by clicking outside
+                    timer: 1000
+                  }).then(() => {
+                    $('#chat').attr({
+                      'data-user-id': res.userId,
+                      'data-user-name': res.username
+                    });
+                  });
+                });
               }
             });
           });
         }
-
         showLoginSwal();
       </script>
-    <% } %>
+    <% } else{ %>
+      <script>
+        //returns app session details 
+        verifySession().then((res) =>{
+          socket.emit("save-socket", res);
+          socket.emit("get-messages")
+       });
+        
+      </script>
+      <%  } %>
+
     <script src="/js/mo.js"></script>
     <script>
-      
       $(document).ready(function (e) {
         let isScrolledUp = false;
         let isScrolling = false;
@@ -192,12 +248,9 @@
 
         changeBackground();
 
-        socket.emit('request-participant-list', () => {
-          console.log("requesting  participant list");
 
-        });
+        function addParticipant(participant) {
 
-        function updateParticipant(participant) {
           const userElement = `
             <li class="participant-container-list-item" data-user-id="${participant.userId}" data-user-name="${participant.username}">
               <div class="sidebar-item">
@@ -211,24 +264,45 @@
               </div>
             </li>
           `;
-          $('#participant-container-list-container').append(userElement);
+          const liElements = document.querySelectorAll(`.participant-container-list-item`);
+          if(liElements.length === 0){
+            $('#participant-container-list-container').append(userElement);
+          }else{
+            liElements.forEach((li) => {
+              if(li.dataset.userId != participant.userId){
+                $('#participant-container-list-container').append(userElement);
+              }
+            });
+          }
         }
 
-        socket.on('participant-connect', (res) => {
-          const participantContainer = $('#participant-container-list-container');
-          participantContainer.empty();
-          $.each(res, (index, participant) => {
-            updateParticipant(participant);
+        function removeParticipant(id) {
+          const liElements = document.querySelectorAll(`.participant-container-list-item`);
+          liElements.forEach((li) => {
+            if(li.dataset.userId == id){
+                li.remove();
+            }
           });
+        }
+
+        //single remove
+        socket.on('remove-participant', (id) => {
+          removeParticipant(id);
         });
 
-        socket.on('update-participant-list', (res) => {
-          const participantContainer = $('#participant-container-list-container');
-          participantContainer.empty();
-          $.each(res, (index, participant) => {
-            updateParticipant(participant);
-          });
+        //multiple add
+        socket.on('update-participants-list', (userlist) => {
+          for (const userId in userlist) {
+            const user = userlist[userId];
+            const data = 
+            {
+              userId : userId,
+              username : user.username
+            }
+            addParticipant(data);
+          }
         });
+       
 
         $.contextMenu({
           selector: '.participant-container-list-item',
@@ -356,7 +430,6 @@
           const minutesString = minutes.toString().padStart(2, '0');
           return `${hours12String}:${minutesString} ${ampm}`;
         }
-
         
         const chatInput = $('#chat-input');
         const chatArea = $('.message-area');
@@ -372,41 +445,57 @@
         $('#chat').submit(function (e) {
           e.preventDefault();
           const message = $('#chat-input').val();
+          const userId = $("#chat").data('userId');
+          const username = $("#chat").data('userName');
           if (message.trim() === '') {
-            chatInput.tooltip('show');
             return;
           } else {
-            const $message_data = {
-              userId : socket.userId,
-              username : socket.username,
-              message: message,
+            const $data = {
+              message : message,
+              userId : userId,
+              username : username
             }
-            console.log($message_data)
-            socket.emit('chat message', $message_data);
+            socket.emit('chat message', $data);
             chatInput.val(''); 
           }
         });
 
-        socket.on('chat message', (res) => {
-          const msg_time = `${res.username} - ${res.time}`
-          const msg_feed = `
-            <div class="${res.username === socket.username ? 'message-right' : 'message-left'}">
-              <div class="message-wrapper">
-                <div class="message">
-                  <span class="message-time">${msg_time}</span>
-                  <div>
-                    ${res.username === socket.username ? '' : '<img src="https://cdn.glitch.global/ac4ea90c-58fd-4432-88fe-46984e31c59b/9.jpg" class="profile-picture" alt="Profile Picture">'}
-                    
-                    <span class="message-text">${res.message}</span>
+        function updateMessages(data) {
+          verifySession().then(($session) => {
+            if (!$session) {
+              console.log('Session verification failed');
+              return;
+            }
+            const msg_time = `${data.username} - ${getCurrentTimeFormatted()}`
+            const msg_feed = `
+              <div class="${$session.userId == data.userId ? 'message-right' : 'message-left'}">
+                <div class="message-wrapper">
+                  <div class="message">
+                    <span class="message-time">${msg_time}</span>
+                    <div>
+                      ${$session.userId == data.userId ? '' : '<img src="https://cdn.glitch.global/ac4ea90c-58fd-4432-88fe-46984e31c59b/9.jpg" class="profile-picture" alt="Profile Picture">'}
+                      
+                      <span class="message-text">${data.message}</span>
+                    </div>
                   </div>
                 </div>
-              </div>
-            </div>`;
-          chatArea.append(msg_feed);
-          
+              </div>`;
+            chatArea.append(msg_feed);
+          }).catch((error) => {
+            console.log('Error updating messages:', error);
+          });
+        }
+
+        socket.on('chat message', (data) => {
+          updateMessages(data);
           if (!isScrolledUp) {
             chatArea.scrollTop(chatArea[0].scrollHeight);
           }
+        });
+        socket.on('update-messages', (data) => {
+          data.forEach((message) => {
+            updateMessages(message);
+          });
         });
 
         $('#participant-search').on('input', () => {
