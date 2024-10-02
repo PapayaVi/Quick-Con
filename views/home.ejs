@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" >
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -27,12 +27,32 @@
               General
             </div>
             <div class="message-area">
+
+
+             <!-- Modal -->
+<div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true" >
+  <div class="modal-dialog modal-xl">
+    <div class="modal-content">
+
+      <div class="modal-body" data-bs-theme="dark">
+        <canvas id="sheet" width="1024" height="600"></canvas>
+      </div>
+
+      <div class="modal-footer">
+        <input type="color" id="color-picker" value="#000000" />
+        <button id="undo-button">Undo</button>
+      </div>
+    </div>
+  </div>
+</div>
             </div>
             <div class="input-container">
               <form id="chat" autocomplete="off" data-user-id="<%= userId %>" data-user-name="<%= username %>">
                 <input type="text" id="chat-input" placeholder="Type a message...">
-                <img class="chat-feature gif-icon" tabindex="0" src="https://cdn.glitch.global/ac4ea90c-58fd-4432-88fe-46984e31c59b/gif-square_10742203.png" data-bs-container="body" data-bs-toggle="popover"  data-bs-title="Emoji Search" data-bs-auto-close="outside" data-bs-placement="top" data-bs-content="."/>
+                <img class="chat-feature gif-icon rounded-pill" tabindex="0" src="https://cdn.glitch.global/ac4ea90c-58fd-4432-88fe-46984e31c59b/gif-square_10742203.png" data-bs-container="body" data-bs-toggle="popover"  data-bs-title="Emoji Search" data-bs-auto-close="outside" data-bs-placement="top" data-bs-content="."/>
                 <img class="chat-feature emoji-icon rounded-pill" src="https://cdn.glitch.global/ac4ea90c-58fd-4432-88fe-46984e31c59b/emoji1.PNG" onmouseenter="" />
+                <img class="chat-feature paint-icon" src="https://cdn.glitch.global/ac4ea90c-58fd-4432-88fe-46984e31c59b/canvas-board.png" data-bs-toggle="modal" data-bs-target="#exampleModal"/>
+
               </form>
             </div>
           </div>
@@ -67,6 +87,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-contextmenu/2.7.1/jquery.contextMenu.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-contextmenu/2.7.1/jquery.ui.position.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@mojs/core"></script>
+    <script src="/js/canva2.js"></script>
     <script>
       var socket = io({
           withCredentials: true
@@ -513,6 +534,8 @@
             }
           });
 
+          
+          
       });
       
     </script>

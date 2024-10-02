@@ -292,12 +292,17 @@ div.panel {
   transition: opacity 0.2s ease-in-out;
 }
 .gif-icon{
-  transform: translateY(-50%) translateX(-325%);
-  width: 30px;
-  height: 30px;
+  transform: translateY(-50%) translateX(-410%);
+  width: 35px;
+  height: 35px;
 }
 .emoji-icon{
   transform: translateY(-50%) translateX(-150%);
+  width: 35px;
+  height: 35px;
+}
+.paint-icon{
+  transform: translateY(-50%) translateX(-280%);
   width: 35px;
   height: 35px;
 }
@@ -381,4 +386,36 @@ div.panel {
   flex-direction: column;
   height: 100%; 
   padding: 1.4rem;
+}
+
+#sheet{
+  border: solid 2px black;
+  background-color: white;
+}
+.round-button{
+  border-radius: 50%;
+  cursor: pointer;
+  height: 50px;
+  width: 50px;
+  margin-right: 10px;
+}
+.round-button:hover{
+  opacity: 80%;
+}
+.red{
+  background-color: red;
+  border: 1px solid crimson;
+}
+.green{
+  background-color: green;
+  border: 1px solid mediumseagreen;
+}
+.blue{
+  background-color: blue;
+  border: 1px solid midnightblue;
+}
+
+.modal-body {
+  display: grid;
+  place-items: center;
 }

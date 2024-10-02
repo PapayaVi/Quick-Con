@@ -8,6 +8,7 @@ const path = require("path");
 const bodyParser = require("body-parser");
 const axios = require("axios")
 const uuid = require('uuid');
+const { createCanvas } = require('canvas');
 
 const http = require("http");
 const server = http.createServer(app);
@@ -91,17 +92,6 @@ function generateNickname() {
     honorifics[Math.floor(Math.random() * honorifics.length)];
   return `${randomCuteWord}${randomHonorific}`;
 }
-function getCurrentTime() {
-  const date = new Date();
-  const hours = date.getHours();
-  const minutes = date.getMinutes();
-  const ampm = hours >= 12 ? "PM" : "AM";
-  const hours12 = hours % 12;
-  const hours12String = hours12 === 0 ? "12" : hours12.toString();
-  const minutesString = minutes.toString().padStart(2, "0");
-  return `${hours12String}:${minutesString} ${ampm}`;
-}
-
 // Create a table to store chat messages if it doesn't exist
 db.execute(
   `
@@ -129,14 +119,11 @@ app.set("views", path.join(__dirname, "./views"));
 app.post('/set-facebook-session', (req, res) => {
   req.session.userId = req.body.facebookId;
   req.session.username = req.body.facebookName;
-  console.log("set fb session",req.session.userId)
   res.send('OK');
 });
 app.post('/set-guest-session', (req, res) => {
   req.session.userId  = uuid.v4();
   req.session.username = generateNickname();
-  console.log("set guest session",req.session.userId)
-
   res.send('OK');
 });
 
@@ -149,7 +136,6 @@ app.get("/upload-pic", (req, res) => {
 });
 
 app.get('/', (req, res) => {
-  console.log("loading home : ",req.session.userId)
   res.render('home', {
     $fb,
     userId: req.session.userId || '',
@@ -180,7 +166,6 @@ app.get('/logout', (req, res) => {
 const userlist = {};
 
 io.on('connection', (socket) => {
-
   socket.on('chat message', (data) => {
     io.emit('chat message', data);
     // const $mi = 'INSERT INTO chat_messages (message, userId, username) VALUES (?, ?, ?)';
@@ -229,17 +214,17 @@ io.on('connection', (socket) => {
       delete userlist[userId];
       io.emit("remove-participant", userId);
     }
-    // if (Object.keys(userlist).length === 0) {
-    //   const $md = "TRUNCATE TABLE chat_messages;";
-    //   db.execute($md)
-    //     .then(() => {
-    //       console.log("cleared messages")
-    //     })
-    //     .catch((err) => {
-    //       console.error('Error retrieving messages from database:', err);
-    //     });
-    // }
   });
+
+  socket.on("drawing", (data) =>{
+    socket.broadcast.emit("drawing", (data))
+  })
+
+  socket.on("undo", (canvasStates) => {
+    socket.broadcast.emit("undo", canvasStates); 
+  });
+
+
 });
 
 server.listen(3000, () => {
